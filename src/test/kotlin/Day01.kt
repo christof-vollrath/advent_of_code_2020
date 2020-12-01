@@ -67,7 +67,7 @@ class Day01_ReadInput : FunSpec({
 
     test("should be parsed correctly") {
         stars.size shouldBe 6
-        stars[0] shouldBe 1721L
+        stars[0] shouldBe 1721
     }
 })
 
@@ -86,13 +86,13 @@ class Day01_FindMatchingEntries : DescribeSpec({
     }
 })
 
-fun calculateSolution(entries: Set<Int>) = entries.fold(1L) { x, y -> x * y.toLong() }
+fun calculateSolution(entries: Set<Int>) = entries.fold(1) { x, y -> x * y }
 
 class Day01_Part1: FunSpec({
     val inputStrings = readResource("day01Input.txt")!!
     val solution = calculateSolution(findMatchingEntries(parseStars(inputStrings)))
     test("solution") {
-        solution shouldBe 381699L
+        solution shouldBe 381699
     }
 })
 
@@ -105,7 +105,7 @@ class Day01_Find3MatchingEntries : DescribeSpec({
         describe("find solution") {
             val solution = calculateSolution(matching)
             it("should have calculated solution") {
-                solution shouldBe 241861950L
+                solution shouldBe 241861950
             }
         }
     }
@@ -118,7 +118,7 @@ class Day01_Part2: FunSpec({
     }
     val solution = calculateSolution(find3MatchingEntries(parseStars(inputStrings)))
     test("solution") {
-        solution shouldBe 111605670L
+        solution shouldBe 111605670
     }
 })
 
