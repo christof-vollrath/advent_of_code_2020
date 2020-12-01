@@ -39,6 +39,18 @@ Multiplying them together produces 1721 * 299 = 514579, so the correct answer is
 Of course, your expense report is much larger.
 Find the two entries that sum to 2020; what do you get if you multiply them together?
 
+--- Part Two ---
+
+The Elves in accounting are thankful for your help;
+one of them even offers you a starfish coin they had left over from a past vacation.
+They offer you a second one if you can find three numbers in your expense report that meet the same criteria.
+
+Using the above example again, the three entries that sum to 2020 are 979, 366, and 675.
+Multiplying them together produces the answer, 241861950.
+
+In your expense report, what is the product of the three entries that sum to 2020?
+
+
 */
 
 val exampleInput = """
@@ -55,7 +67,7 @@ class Day01_ReadInput : FunSpec({
 
     test("should be parsed correctly") {
         stars.size shouldBe 6
-        stars[0] shouldBe 1721
+        stars[0] shouldBe 1721L
     }
 })
 
@@ -74,13 +86,39 @@ class Day01_FindMatchingEntries : DescribeSpec({
     }
 })
 
-fun calculateSolution(entries: Set<Int>) = entries.fold(1) { x, y -> x * y }
+fun calculateSolution(entries: Set<Int>) = entries.fold(1L) { x, y -> x * y.toLong() }
 
 class Day01_Part1: FunSpec({
     val inputStrings = readResource("day01Input.txt")!!
     val solution = calculateSolution(findMatchingEntries(parseStars(inputStrings)))
     test("solution") {
-        solution shouldBe 381699
+        solution shouldBe 381699L
+    }
+})
+
+class Day01_Find3MatchingEntries : DescribeSpec({
+    describe("find matching pair") {
+        val matching = find3MatchingEntries(parseStars(exampleInput))
+        it("should find matching entries") {
+            matching shouldBe setOf(979, 366, 675)
+        }
+        describe("find solution") {
+            val solution = calculateSolution(matching)
+            it("should have calculated solution") {
+                solution shouldBe 241861950L
+            }
+        }
+    }
+})
+
+class Day01_Part2: FunSpec({
+    val inputStrings = readResource("day01Input.txt")!!
+    test("how big is the input") {
+        parseStars(inputStrings).size shouldBe 200
+    }
+    val solution = calculateSolution(find3MatchingEntries(parseStars(inputStrings)))
+    test("solution") {
+        solution shouldBe 111605670L
     }
 })
 
@@ -88,6 +126,17 @@ fun findMatchingEntries(stars: List<Int>): Set<Int> {
     stars.forEach() { star1 ->
         stars.forEach { star2 ->
             if (star1 + star2 == 2020) return setOf(star1, star2)
+        }
+    }
+    throw IllegalArgumentException("No matching entries found")
+}
+
+fun find3MatchingEntries(stars: List<Int>): Set<Int> {
+    stars.forEach() { star1 ->
+        stars.forEach { star2 ->
+            stars.forEach { star3 ->
+                if (star1 + star2 + star3 == 2020) return setOf(star1, star2, star3)
+            }
         }
     }
     throw IllegalArgumentException("No matching entries found")
