@@ -134,8 +134,10 @@ fun findMatchingEntries(stars: List<Int>): Set<Int> {
 fun find3MatchingEntries(stars: List<Int>): Set<Int> {
     stars.forEach() { star1 ->
         stars.forEach { star2 ->
-            stars.forEach { star3 ->
-                if (star1 + star2 + star3 == 2020) return setOf(star1, star2, star3)
+            if (star1 + star2 <= 2020) {
+                stars.forEach { star3 ->
+                    if (star1 + star2 + star3 == 2020) return setOf(star1, star2, star3)
+                }
             }
         }
     }
