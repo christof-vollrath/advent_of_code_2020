@@ -1,1 +1,5 @@
-# advent_of_code_2020
+# Advent of Code 2020 in Kotlin
+
+http://adventofcode.com/2020/
+
+This year playing with Kotest https://github.com/kotest/kotest
