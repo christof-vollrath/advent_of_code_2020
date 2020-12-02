@@ -35,6 +35,29 @@ both within the limits of their respective policies.
 
 How many passwords are valid according to their policies?
 
+--- Part Two ---
+
+While it appears you validated the passwords correctly,
+they don't seem to be what the Official Toboggan Corporate Authentication System is expecting.
+
+The shopkeeper suddenly realizes that he just accidentally explained the password policy rules
+from his old job at the sled rental place down the street!
+The Official Toboggan Corporate Policy actually works a little differently.
+
+Each policy actually describes two positions in the password,
+where 1 means the first character,
+2 means the second character, and so on.
+(Be careful; Toboggan Corporate Policies have no concept of "index zero"!)
+Exactly one of these positions must contain the given letter.
+Other occurrences of the letter are irrelevant for the purposes of policy enforcement.
+
+Given the same example list from above:
+
+1-3 a: abcde is valid: position 1 contains a and position 3 does not.
+1-3 b: cdefg is invalid: neither position 1 nor position 3 contains b.
+2-9 c: ccccccccc is invalid: both position 2 and position 9 contain c.
+How many passwords are valid according to the new interpretation of the policies?
+
  */
 
 class Day02_ParseInput : FunSpec({
@@ -67,12 +90,6 @@ class Day02_CheckInput : FunSpec({
             s.validatePasswordInput() shouldBe expected
         }
     }
-    val policyAndPassword = parsePolicyAndPassword("1-3 a: abcde")
-
-    test("should be parsed correctly") {
-        policyAndPassword.second shouldBe "abcde"
-        policyAndPassword.first shouldBe PasswordPolicy(atLeast = 1, atMost = 3, c = 'a')
-    }
 })
 
 class Day02_Part1: FunSpec({
@@ -83,11 +100,48 @@ class Day02_Part1: FunSpec({
     }
 })
 
+class Day02_CheckInput2 : FunSpec({
+    data class CountTestCase(val s: String, val expected: Int)
+    context("count chars") {
+        forAll(
+            CountTestCase("1-3 a: abcde", 1),
+            CountTestCase("1-3 b: cdefg", 0),
+            CountTestCase("2-9 c: ccccccccc", 2),
+        ) { (s, expected) ->
+            val (policy, password) = parsePolicyAndPassword(s)
+            listOf(password[policy.pos1 - 1], password[policy.pos2 - 1]).count { it == policy.c } shouldBe expected
+        }
+    }
+    data class ValidateTestCase(val s: String, val expected: Boolean)
+    context("validate passwords") {
+        forAll(
+            ValidateTestCase("1-3 a: abcde", true),
+            ValidateTestCase("1-3 b: cdefg", false),
+            ValidateTestCase("2-9 c: ccccccccc", false),
+        ) { (s, expected) ->
+            s.validatePasswordInput2() shouldBe expected
+        }
+    }
+})
+
+class Day02_Part2: FunSpec({
+    val inputStrings = readResource("day02Input.txt")!!.split("\n")
+    val count = inputStrings.count { it.validatePasswordInput2() }
+    test("solution") {
+        count shouldBe 694
+    }
+})
+
 private fun String.validatePasswordInput(): Boolean {
     val (policy, password) = parsePolicyAndPassword(this)
     val count = password.count { it == policy.c }
     return count in (policy.atLeast .. policy.atMost)
+}
 
+private fun String.validatePasswordInput2(): Boolean {
+    val (policy, password) = parsePolicyAndPassword(this)
+    val count = listOf(password[policy.pos1 - 1], password[policy.pos2 - 1]).count { it == policy.c }
+    return count == 1
 }
 
 fun parsePolicyAndPassword(input: String): Pair<PasswordPolicy, String> {
@@ -99,4 +153,9 @@ fun parsePolicyAndPassword(input: String): Pair<PasswordPolicy, String> {
 
 }
 
-data class PasswordPolicy(val atLeast: Int, val atMost: Int, val c: Char)
+data class PasswordPolicy(val atLeast: Int, val atMost: Int, val c: Char)  {
+    val pos1: Int // Aliases for part 2
+        get() = atLeast
+    val pos2: Int
+        get() = atMost
+}
