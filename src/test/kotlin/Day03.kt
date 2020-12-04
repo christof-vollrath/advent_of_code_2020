@@ -95,6 +95,26 @@ What do you get if you multiply together the number of trees encountered on each
 
  */
 
+fun parseTreeArray(input: String): TobogganTreeArray = TobogganTreeArray(
+    input.split("\n").map {
+        it.trim().toList()
+    }
+)
+
+class TobogganTreeArray(val array: List<List<Char>>) {
+    operator fun get(x: Int, y: Int) = array[y][x % array[y].size]
+    fun countTrees(dx: Int = 3, dy: Int = 1) = (0 until size / dy).map { i ->
+        get(i * dx, i * dy)
+    }
+        .count { it == '#' }
+    fun multiplySlopeCounts(slopes: List<List<Int>>) = slopes.map { slope ->
+        val (dx, dy) = slope
+        countTrees(dx, dy)
+    }.fold(1L) { m, count -> m * count }
+
+    val size get() = array.size
+}
+
 val simpleExample = """
     ..##.......
     #...#...#..
@@ -184,24 +204,3 @@ class Day03_Part2: FunSpec({
         multipliedCounts shouldBe 9354744432L
     }
 })
-
-fun parseTreeArray(input: String): TobogganTreeArray = TobogganTreeArray(
-    input.split("\n").map {
-        it.trim().toList()
-    }
-)
-
-class TobogganTreeArray(val array: List<List<Char>>) {
-    operator fun get(x: Int, y: Int) = array[y][x % array[y].size]
-    fun countTrees(dx: Int = 3, dy: Int = 1) = (0 until size / dy).map { i ->
-            get(i * dx, i * dy)
-        }
-        .count { it == '#' }
-    fun multiplySlopeCounts(slopes: List<List<Int>>) = slopes.map { slope ->
-        val (dx, dy) = slope
-        countTrees(dx, dy)
-    }.fold(1L) { m, count -> m * count }
-
-    val size get() = array.size
-
-}

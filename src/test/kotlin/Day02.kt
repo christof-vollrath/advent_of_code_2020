@@ -60,6 +60,34 @@ How many passwords are valid according to the new interpretation of the policies
 
  */
 
+fun String.validatePasswordInput(): Boolean {
+    val (policy, password) = parsePolicyAndPassword(this)
+    val count = password.count { it == policy.c }
+    return count in (policy.atLeast .. policy.atMost)
+}
+
+fun String.validatePasswordInput2(): Boolean {
+    val (policy, password) = parsePolicyAndPassword(this)
+    val count = listOf(password[policy.pos1 - 1], password[policy.pos2 - 1]).count { it == policy.c }
+    return count == 1
+}
+
+fun parsePolicyAndPassword(input: String): Pair<PasswordPolicy, String> {
+    val regex = """(\d+)-(\d+) ([a-z]): ([a-z]*)""".toRegex()
+    val match = regex.find(input) ?: throw IllegalArgumentException("Can not parse input")
+    if (match.groupValues.size != 5) throw IllegalArgumentException("Not all elements parsed")
+    val values = match.groupValues
+    return Pair(PasswordPolicy(values[1].toInt(), values[2].toInt(), values[3].first()), values[4])
+
+}
+
+data class PasswordPolicy(val atLeast: Int, val atMost: Int, val c: Char)  {
+    val pos1: Int // Aliases for part 2
+        get() = atLeast
+    val pos2: Int
+        get() = atMost
+}
+
 class Day02_ParseInput : FunSpec({
     val policyAndPassword = parsePolicyAndPassword("1-3 a: abcde")
 
@@ -131,31 +159,3 @@ class Day02_Part2: FunSpec({
         count shouldBe 694
     }
 })
-
-private fun String.validatePasswordInput(): Boolean {
-    val (policy, password) = parsePolicyAndPassword(this)
-    val count = password.count { it == policy.c }
-    return count in (policy.atLeast .. policy.atMost)
-}
-
-private fun String.validatePasswordInput2(): Boolean {
-    val (policy, password) = parsePolicyAndPassword(this)
-    val count = listOf(password[policy.pos1 - 1], password[policy.pos2 - 1]).count { it == policy.c }
-    return count == 1
-}
-
-fun parsePolicyAndPassword(input: String): Pair<PasswordPolicy, String> {
-    val  regex = """(\d+)-(\d+) ([a-z]): ([a-z]*)""".toRegex()
-    val match = regex.find(input) ?: throw IllegalArgumentException("Can not parse input")
-    if (match.groupValues.size != 5) throw IllegalArgumentException("Not all elements parsed")
-    val values = match.groupValues
-    return Pair(PasswordPolicy(values[1].toInt(), values[2].toInt(), values[3].first()), values[4])
-
-}
-
-data class PasswordPolicy(val atLeast: Int, val atMost: Int, val c: Char)  {
-    val pos1: Int // Aliases for part 2
-        get() = atLeast
-    val pos2: Int
-        get() = atMost
-}

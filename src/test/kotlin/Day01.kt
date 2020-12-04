@@ -49,9 +49,32 @@ Using the above example again, the three entries that sum to 2020 are 979, 366, 
 Multiplying them together produces the answer, 241861950.
 
 In your expense report, what is the product of the three entries that sum to 2020?
-
-
 */
+
+fun findMatchingEntries(stars: List<Int>): Set<Int> {
+    stars.forEach() { star1 ->
+        stars.forEach { star2 ->
+            if (star1 + star2 == 2020) return setOf(star1, star2)
+        }
+    }
+    throw IllegalArgumentException("No matching entries found")
+}
+
+fun find3MatchingEntries(stars: List<Int>): Set<Int> {
+    stars.forEach() { star1 ->
+        stars.forEach { star2 ->
+            if (star1 + star2 <= 2020) {
+                stars.forEach { star3 ->
+                    if (star1 + star2 + star3 == 2020) return setOf(star1, star2, star3)
+                }
+            }
+        }
+    }
+    throw IllegalArgumentException("No matching entries found")
+}
+
+fun parseStars(inputString: String): List<Int> =
+    inputString.split("\n").map { it.toInt() }
 
 val exampleInput = """
         1721
@@ -121,30 +144,4 @@ class Day01_Part2: FunSpec({
         solution shouldBe 111605670
     }
 })
-
-fun findMatchingEntries(stars: List<Int>): Set<Int> {
-    stars.forEach() { star1 ->
-        stars.forEach { star2 ->
-            if (star1 + star2 == 2020) return setOf(star1, star2)
-        }
-    }
-    throw IllegalArgumentException("No matching entries found")
-}
-
-fun find3MatchingEntries(stars: List<Int>): Set<Int> {
-    stars.forEach() { star1 ->
-        stars.forEach { star2 ->
-            if (star1 + star2 <= 2020) {
-                stars.forEach { star3 ->
-                    if (star1 + star2 + star3 == 2020) return setOf(star1, star2, star3)
-                }
-            }
-        }
-    }
-    throw IllegalArgumentException("No matching entries found")
-}
-
-fun parseStars(inputString: String): List<Int> =
-    inputString.split("\n").map { it.toInt() }
-
 
