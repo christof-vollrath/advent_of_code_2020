@@ -1,4 +1,3 @@
-import io.kotest.core.datatest.forAll
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.data.forAll
 import io.kotest.data.headers
@@ -64,6 +63,18 @@ BBFFBBFRLL: row 102, column 4, seat ID 820.
 
 As a sanity check, look through your list of boarding passes. What is the highest seat ID on a boarding pass?
 
+--- Part Two ---
+
+Ding! The "fasten seat belt" signs have turned on. Time to find your seat.
+
+It's a completely full flight, so your seat should be the only missing boarding pass in your list.
+However, there's a catch: some of the seats at the very front and back of the plane don't exist on this aircraft,
+so they'll be missing from your list as well.
+
+Your seat wasn't at the very front or back, though; the seats with IDs +1 and -1 from yours will be in your list.
+
+What is the ID of your seat?
+
  */
 
 class Day05_Part1 : FunSpec({
@@ -108,6 +119,30 @@ class Day05_Part1_Excercise: FunSpec({
     val highestId = passStrings.map { decodeBoardingPass(it) }.maxOrNull()
     test("solution") {
         highestId shouldBe 978
+    }
+})
+
+class Day05_Part2_Excercise: FunSpec({
+    val input = readResource("day05Input.txt")!!
+    val passStrings = input.split("\n")
+    val ids = passStrings.map { decodeBoardingPass(it) }
+    val idsInRowWithEmptySeat = ids.groupBy { id ->
+        val row = id / 8
+        row
+    }
+    .entries.filter { (_, value) ->
+        value.size < 8
+    }
+    .filter { (key, _) ->
+        key != 1 && key != 122
+    }
+    .first()
+    .value
+    val row = idsInRowWithEmptySeat.first() / 8
+    val allSeatsInRow = (0..7).map { row * 8 + it }
+    val freeSeat = (allSeatsInRow - idsInRowWithEmptySeat).first()
+    test("solution") {
+        freeSeat shouldBe 727
     }
 })
 
