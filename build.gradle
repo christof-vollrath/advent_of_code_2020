@@ -1,4 +1,5 @@
 plugins {
+    id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
 }
 
@@ -9,7 +10,20 @@ repositories {
     mavenCentral()
     jcenter()
 }
+targetCompatibility ="1.8"
 
+kotlin {
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
+}
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
