@@ -77,6 +77,31 @@ What is the ID of your seat?
 
  */
 
+fun decodeBoardingPass(passString: String): Int = decodeRows(passString.take(7)) * 8 + decodeColumns(passString.drop(7))
+
+fun decodeRows(rowString: String) = decodeBinaryString( rowString.map {
+    when(it) {
+        'B' -> '1'
+        'F' -> '0'
+        else -> throw IllegalArgumentException("Unexpected row char $it")
+    }
+})
+
+fun decodeColumns(colString: String) = decodeBinaryString( colString.map {
+    when(it) {
+        'R' -> '1'
+        'L' -> '0'
+        else -> throw IllegalArgumentException("Unexpected row char $it")
+    }
+})
+
+fun decodeBinaryString(binaryString: List<Char>): Int = binaryString.fold(0) { current, n ->
+    current * 2  + when(n) {
+        '1' -> 1
+        else -> 0
+    }
+}
+
 class Day05_Part1 : FunSpec({
     context("decode row") {
         table(
@@ -145,27 +170,3 @@ class Day05_Part2_Excercise: FunSpec({
         freeSeat shouldBe 727
     }
 })
-
-fun decodeBoardingPass(passString: String): Int = decodeRows(passString.take(7)) * 8 + decodeColumns(passString.drop(7))
-
-fun decodeRows(rowString: String) = decodeBinaryString( rowString.map {
-    when(it) {
-        'B' -> '1'
-        'F' -> '0'
-        else -> throw IllegalArgumentException("Unexpected row char $it")
-    }
-})
-
-fun decodeColumns(colString: String) = decodeBinaryString( colString.map {
-    when(it) {
-        'R' -> '1'
-        'L' -> '0'
-        else -> throw IllegalArgumentException("Unexpected row char $it")
-    }
-})
-fun decodeBinaryString(binaryString: List<Char>): Int = binaryString.fold(0) { current, n ->
-    current * 2  + when(n) {
-        '1' -> 1
-        else -> 0
-    }
-}
