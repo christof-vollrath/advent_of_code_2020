@@ -138,7 +138,7 @@ class Day05_Part1 : FunSpec({
     }
 })
 
-class Day05_Part1_Excercise: FunSpec({
+class Day05_Part1_Exercise: FunSpec({
     val input = readResource("day05Input.txt")!!
     val passStrings = input.split("\n")
     val highestId = passStrings.map { decodeBoardingPass(it) }.maxOrNull()
@@ -147,7 +147,7 @@ class Day05_Part1_Excercise: FunSpec({
     }
 })
 
-class Day05_Part2_Excercise: FunSpec({
+class Day05_Part2_Exercise: FunSpec({
     val input = readResource("day05Input.txt")!!
     val passStrings = input.split("\n")
     val ids = passStrings.map { decodeBoardingPass(it) }

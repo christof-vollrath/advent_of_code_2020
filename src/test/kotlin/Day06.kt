@@ -168,7 +168,7 @@ class Day06_Part1 : FunSpec({
     }
 })
 
-class Day06_Part1_Excercise: FunSpec({
+class Day06_Part1_Exercise: FunSpec({
     val input = readResource("day06Input.txt")!!
     val count = parseAnswers(input).anyPerGroup().countYes()
     test("solution") {
@@ -211,7 +211,7 @@ class Day06_Part2 : FunSpec({
     }
 })
 
-class Day06_Part2_Excercise: FunSpec({
+class Day06_Part2_Exercise: FunSpec({
     val input = readResource("day06Input.txt")!!
     val count = parseAnswers(input).allPerGroup().countYes()
     test("solution") {
