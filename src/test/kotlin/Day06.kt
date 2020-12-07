@@ -57,30 +57,70 @@ In this example, the sum of these counts is 3 + 3 + 3 + 1 + 1 = 11.
 For each group, count the number of questions to which anyone answered "yes".
 What is the sum of those counts?
 
+--- Part Two ---
+
+As you finish the last group's customs declaration, you notice that you misread one word in the instructions:
+
+You don't need to identify the questions to which anyone answered "yes"; 
+you need to identify the questions to which everyone answered "yes"!
+
+Using the same example as above:
+
+abc
+
+a
+b
+c
+
+ab
+ac
+
+a
+a
+a
+a
+
+b
+
+This list represents answers from five groups:
+
+In the first group, everyone (all 1 person) answered "yes" to 3 questions: a, b, and c.
+In the second group, there is no question to which everyone answered "yes".
+In the third group, everyone answered yes to only 1 question, a. Since some people did not answer "yes" to b or c, they don't count.
+In the fourth group, everyone answered yes to only 1 question, a.
+In the fifth group, everyone (all 1 person) answered "yes" to 1 question, b.
+In this example, the sum of these counts is 3 + 0 + 1 + 1 + 1 = 6.
+
+For each group, count the number of questions to which everyone answered "yes". What is the sum of those counts?
+
  */
 
 
 fun List<Set<Char>>.countYes(): Int = sumBy { it.size }
 
-fun List<List<Set<Char>>>.perGroup(): List<Set<Char>> = map { group ->
-    group.fold(emptySet()) { result, current ->
+fun List<List<Set<Char>>>.anyPerGroup(): List<Set<Char>> = map { group ->
+    group.reduce { result, current ->
         result.union(current)
     }
 }
 
+fun List<List<Set<Char>>>.allPerGroup(): List<Set<Char>> = map { group ->
+    group.reduce { result, current ->
+        result.intersect(current)
+    }
+}
 fun parseAnswers(answers: String): List<List<Set<Char>>> =
     answers.split("""\n\s*\n""".toRegex())
         .map { groupString ->
             groupString.trim().split("\n")
                 .map {
-                    val line = it.trim()
                     it.toCharArray().toSet()
                 }
                 .filter { it.isNotEmpty() }
         }
 
 class Day06_Part1 : FunSpec({
-    val answers = """
+    val answersString = """
         abc
         
         a
@@ -99,7 +139,7 @@ class Day06_Part1 : FunSpec({
     """.trimIndent()
 
     context("parse answers") {
-        val answers = parseAnswers(answers)
+        val answers = parseAnswers(answersString)
         test("numer of groups") {
             answers.size shouldBe 5
         }
@@ -114,7 +154,7 @@ class Day06_Part1 : FunSpec({
     }
     context("yes answers of group are a union of answers of persons") {
         test("union of answers per group") {
-            parseAnswers(answers).perGroup() shouldBe listOf(
+            parseAnswers(answersString).anyPerGroup() shouldBe listOf(
                 setOf('a', 'b', 'c'),
                 setOf('a', 'b', 'c'),
                 setOf('a', 'b', 'c'),
@@ -123,15 +163,58 @@ class Day06_Part1 : FunSpec({
             )
         }
         test("sum yes answers") {
-            parseAnswers(answers).perGroup().countYes() shouldBe 11
+            parseAnswers(answersString).anyPerGroup().countYes() shouldBe 11
         }
     }
 })
 
 class Day06_Part1_Excercise: FunSpec({
     val input = readResource("day06Input.txt")!!
-    val count = parseAnswers(input).perGroup().countYes()
+    val count = parseAnswers(input).anyPerGroup().countYes()
     test("solution") {
         count shouldBe 6542
+    }
+})
+
+class Day06_Part2 : FunSpec({
+    val answers = """
+        abc
+        
+        a
+        b
+        c
+        
+        ab
+        ac
+        
+        a
+        a
+        a
+        a
+        
+        b       
+    """.trimIndent()
+
+    context("yes answers of group are a now an interseciton of answers of persons") {
+        test("intersection of answers per group") {
+            parseAnswers(answers).allPerGroup() shouldBe listOf(
+                setOf('a', 'b', 'c'),
+                setOf(),
+                setOf('a'),
+                setOf('a'),
+                setOf('b'),
+            )
+        }
+        test("sum yes answers") {
+            parseAnswers(answers).allPerGroup().countYes() shouldBe 6
+        }
+    }
+})
+
+class Day06_Part2_Excercise: FunSpec({
+    val input = readResource("day06Input.txt")!!
+    val count = parseAnswers(input).allPerGroup().countYes()
+    test("solution") {
+        count shouldBe 3299
     }
 })
