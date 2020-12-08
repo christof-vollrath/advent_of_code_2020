@@ -1,8 +1,6 @@
 import io.kotest.core.datatest.forAll
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.time.Year
 
 /*
 --- Day 3: Toboggan Trajectory ---

@@ -87,11 +87,11 @@ data class Coord2(val x: Int, val y: Int) {
 }
 
 fun <E> List<List<E>>.getOrNull(coord: Coord2): E? {
-    return if ( !(0 <= coord.y && coord.y < size)) null
+    return if ( !(coord.y in 0 until size)) null
     else {
         val row = get(coord.y)
         if ( ! (0 <= coord.x && coord.x < row.size)) null
-        else row.get(coord.x)
+        else row[coord.x]
     }
 }
 

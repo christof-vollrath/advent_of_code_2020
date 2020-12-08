@@ -170,7 +170,7 @@ fun Map<String, String>.check() =
     )).size == 7
 
 fun Map<String, String>.validate() = keys.subtract(setOf("cid")).all { key ->
-    val validator = validators[key] ?: { _: String -> false }
+    val validator = validators[key] ?: { false }
     val value = this[key]
     if (value == null) {
         println("Error: no validator for $key")
@@ -298,7 +298,7 @@ class Day04_Part1 : FunSpec({
     }
 })
 
-class Day04_Part1_Excercise: FunSpec({
+class Day04_Part1_Exercise: FunSpec({
     val input = readResource("day04Input.txt")!!
     val count = countCheckedPassports(parsePassportStrings(input))
     test("solution") {
@@ -376,7 +376,7 @@ class Day04_Part2 : FunSpec({
     }
 })
 
-class Day04_Part2_Excercise: FunSpec({
+class Day04_Part2_Exercise: FunSpec({
     val input = readResource("day04Input.txt")!!
     val count = countValidPassports(parsePassportStrings(input))
     test("solution") {

@@ -125,7 +125,6 @@ class Day05_Part1 : FunSpec({
         }
     }
     context("decode boarding pass") {
-        data class CheckPassportTestCase(val boardingPass: String, val expected: Boolean)
         table(
             headers("boading pass", "expected"),
             row("BFFFBBFRRR", 567),
@@ -138,7 +137,7 @@ class Day05_Part1 : FunSpec({
     }
 })
 
-class Day05_Part1_Excercise: FunSpec({
+class Day05_Part1_Exercise: FunSpec({
     val input = readResource("day05Input.txt")!!
     val passStrings = input.split("\n")
     val highestId = passStrings.map { decodeBoardingPass(it) }.maxOrNull()
@@ -147,7 +146,7 @@ class Day05_Part1_Excercise: FunSpec({
     }
 })
 
-class Day05_Part2_Excercise: FunSpec({
+class Day05_Part2_Exercise: FunSpec({
     val input = readResource("day05Input.txt")!!
     val passStrings = input.split("\n")
     val ids = passStrings.map { decodeBoardingPass(it) }
@@ -155,14 +154,12 @@ class Day05_Part2_Excercise: FunSpec({
         val row = id / 8
         row
     }
-    .entries.filter { (_, value) ->
-        value.size < 8
-    }
-    .filter { (key, _) ->
-        key != 1 && key != 122
-    }
-    .first()
-    .value
+        .entries.filter { (_, value) ->
+            value.size < 8
+        }.first { (key, _) ->
+            key != 1 && key != 122
+        }
+        .value
     val row = idsInRowWithEmptySeat.first() / 8
     val allSeatsInRow = (0..7).map { row * 8 + it }
     val freeSeat = (allSeatsInRow - idsInRowWithEmptySeat).first()

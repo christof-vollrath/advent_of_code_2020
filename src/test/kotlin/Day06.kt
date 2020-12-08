@@ -168,7 +168,7 @@ class Day06_Part1 : FunSpec({
     }
 })
 
-class Day06_Part1_Excercise: FunSpec({
+class Day06_Part1_Exercise: FunSpec({
     val input = readResource("day06Input.txt")!!
     val count = parseAnswers(input).anyPerGroup().countYes()
     test("solution") {
@@ -195,7 +195,7 @@ class Day06_Part2 : FunSpec({
         b       
     """.trimIndent()
 
-    context("yes answers of group are a now an interseciton of answers of persons") {
+    context("yes answers of group are a now an intersection of answers of persons") {
         test("intersection of answers per group") {
             parseAnswers(answers).allPerGroup() shouldBe listOf(
                 setOf('a', 'b', 'c'),
@@ -211,7 +211,7 @@ class Day06_Part2 : FunSpec({
     }
 })
 
-class Day06_Part2_Excercise: FunSpec({
+class Day06_Part2_Exercise: FunSpec({
     val input = readResource("day06Input.txt")!!
     val count = parseAnswers(input).allPerGroup().countYes()
     test("solution") {

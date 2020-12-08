@@ -52,7 +52,7 @@ In your expense report, what is the product of the three entries that sum to 202
 */
 
 fun findMatchingEntries(stars: List<Int>): Set<Int> {
-    stars.forEach() { star1 ->
+    stars.forEach { star1 ->
         stars.forEach { star2 ->
             if (star1 + star2 == 2020) return setOf(star1, star2)
         }
@@ -61,7 +61,7 @@ fun findMatchingEntries(stars: List<Int>): Set<Int> {
 }
 
 fun find3MatchingEntries(stars: List<Int>): Set<Int> {
-    stars.forEach() { star1 ->
+    stars.forEach { star1 ->
         stars.forEach { star2 ->
             if (star1 + star2 <= 2020) {
                 stars.forEach { star3 ->

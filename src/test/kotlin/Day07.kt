@@ -102,18 +102,18 @@ fun Collection<BagQuantity>.sumByColor() = groupBy { it.color }
     .entries.map { (color, bagQuantities) ->
         BagQuantity(color, bagQuantities.map { it.quantity }.sum())
     }
-fun Collection<Bag>.findAllBagsContainingWithQuantity(initalBagQuantity: BagQuantity): Set<BagQuantity> {
+fun Collection<Bag>.findAllBagsContainingWithQuantity(initialBagQuantity: BagQuantity): Set<BagQuantity> {
     val containingMap = this.flatMap {bag ->
         bag.content.map { bagQuantity ->
             bag.color to bagQuantity
         }
     }.groupBy { it.first }
     return sequence {
-        var currentBagQuantities = listOf(initalBagQuantity)
+        var currentBagQuantities = listOf(initialBagQuantity)
         while(true) {
             val nextBagQuantities = currentBagQuantities.flatMap { currentBagQuantity ->
                 val containers = containingMap[currentBagQuantity.color]
-                val interimResult = containers?.map { (_, bagQuantity) -> BagQuantity(bagQuantity.color, currentBagQuantity.quantity * bagQuantity.quantity) } ?: emptyList<BagQuantity>()
+                val interimResult = containers?.map { (_, bagQuantity) -> BagQuantity(bagQuantity.color, currentBagQuantity.quantity * bagQuantity.quantity) } ?: emptyList()
                 yield(interimResult)
                 interimResult
             }
