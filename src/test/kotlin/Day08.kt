@@ -209,3 +209,53 @@ class Day08_Part1_Exercise: FunSpec({
         console.accu shouldBe 1859
     }
 })
+
+class Day08_Part2 : FunSpec({
+    val progString = """
+        nop +0
+        acc +1
+        jmp +4
+        acc +3
+        jmp -3
+        acc -99
+        acc +1
+        jmp -4
+        acc +6
+    """.trimIndent()
+    context("find correction") {
+        val program = parseProgram(progString)
+        val correctedProgram = program.correct()
+        val console = ConsoleCpu(correctedProgram)
+        console.execute()
+        console.accu shouldBe 8
+    }
+})
+
+class Day08_Part2_Exercise: FunSpec({
+    val input = readResource("day08Input.txt")!!
+    val program = parseProgram(input)
+    val correctedProgram = program.correct()
+    val console = ConsoleCpu(correctedProgram)
+    console.execute()
+    console.accu shouldBe 1235
+})
+
+private fun List<ConsoleCommand>.correct(): List<ConsoleCommand> {
+    for (i in 0 until size) {
+        val cmd = get(i)
+        if (cmd is Nop || cmd is Jmp) {
+            val changedProgram = toMutableList()
+            changedProgram[i] =
+                when(cmd)  {
+                    is Nop -> Jmp(cmd.arg)
+                    is Jmp -> Nop(cmd.arg)
+                    else -> throw InternalError("Must be nop or jmp")
+                }
+            try {
+                ConsoleCpu(changedProgram).execute()
+                return changedProgram
+            } catch (e: IllegalArgumentException) { } // Error, try next change
+        }
+    }
+    throw java.lang.IllegalArgumentException("No correction found")
+}
