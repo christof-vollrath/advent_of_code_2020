@@ -78,7 +78,7 @@ How many individual bags are required inside your single shiny gold bag?
 
  */
 
-private fun Collection<Bag>.findAllBagsContaining(color: String): Set<Bag> {
+fun Collection<Bag>.findAllBagsContaining(color: String): Set<Bag> {
     val containingMap = this.flatMap {bag ->
         bag.content.map { bagQuantity ->
             bagQuantity.color to bag
@@ -96,6 +96,31 @@ private fun Collection<Bag>.findAllBagsContaining(color: String): Set<Bag> {
             else currentColors = nextColors
         }
     }.flatten().toSet()
+}
+
+fun Collection<BagQuantity>.sumByColor() = groupBy { it.color }
+    .entries.map { (color, bagQuantities) ->
+        BagQuantity(color, bagQuantities.map { it.quantity }.sum())
+    }
+fun Collection<Bag>.findAllBagsContainingWithQuantity(initalBagQuantity: BagQuantity): Set<BagQuantity> {
+    val containingMap = this.flatMap {bag ->
+        bag.content.map { bagQuantity ->
+            bag.color to bagQuantity
+        }
+    }.groupBy { it.first }
+    return sequence {
+        var currentBagQuantities = listOf(initalBagQuantity)
+        while(true) {
+            val nextBagQuantities = currentBagQuantities.flatMap { currentBagQuantity ->
+                val containers = containingMap[currentBagQuantity.color]
+                val interimResult = containers?.map { (_, bagQuantity) -> BagQuantity(bagQuantity.color, currentBagQuantity.quantity * bagQuantity.quantity) } ?: emptyList<BagQuantity>()
+                yield(interimResult)
+                interimResult
+            }
+            if(nextBagQuantities.isEmpty()) break
+            else currentBagQuantities = nextBagQuantities.sumByColor()
+        }
+    }.flatten().toList().sumByColor().toSet()
 }
 
 fun parseBagSpecifications(bagSpecifications: String): List<Bag> = bagSpecifications.split("\n")
@@ -180,12 +205,10 @@ class Day07_Part1 : FunSpec({
             bagsContainingShinyGold.size shouldBe 4
         }
         test("should contain the right bags") {
-            println(bagsContainingShinyGold)
             bagsContainingShinyGold.map { it.color }.toSet() shouldBe setOf("bright white", "muted yellow", "dark orange", "light red")
         }
     }
 })
-
 
 class Day07_Part1_Exercise: FunSpec({
     val input = readResource("day07Input.txt")!!
@@ -196,5 +219,59 @@ class Day07_Part1_Exercise: FunSpec({
     val count = bagSpecifications.findAllBagsContaining("shiny gold").size
     test("solution") {
         count shouldBe 205
+    }
+})
+
+class Day07_Part2 : FunSpec({
+    context("find all bags containing with quantity example 1") {
+        val bagSpecificationsString = """
+                light red bags contain 1 bright white bag, 2 muted yellow bags.
+                dark orange bags contain 3 bright white bags, 4 muted yellow bags.
+                bright white bags contain 1 shiny gold bag.
+                muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
+                shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
+                dark olive bags contain 3 faded blue bags, 4 dotted black bags.
+                vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
+                faded blue bags contain no other bags.
+                dotted black bags contain no other bags.
+            """.trimIndent()
+        val bagSpecifications = parseBagSpecifications(bagSpecificationsString)
+        val bagsContainingShinyGold = bagSpecifications.findAllBagsContainingWithQuantity(BagQuantity("shiny gold", 1))
+        test("should contain the right number of bags") {
+            bagsContainingShinyGold.size shouldBe 4
+        }
+        test("should contain the right quantity") {
+            bagsContainingShinyGold.map { it.quantity }.sum() shouldBe 32
+        }
+    }
+    context("find all bags containing with quantity example 2") {
+        val bagSpecificationsString = """
+            shiny gold bags contain 2 dark red bags.
+            dark red bags contain 2 dark orange bags.
+            dark orange bags contain 2 dark yellow bags.
+            dark yellow bags contain 2 dark green bags.
+            dark green bags contain 2 dark blue bags.
+            dark blue bags contain 2 dark violet bags.
+            dark violet bags contain no other bags.
+            """.trimIndent()
+        val bagSpecifications = parseBagSpecifications(bagSpecificationsString)
+        val bagsContainingShinyGold = bagSpecifications.findAllBagsContainingWithQuantity(BagQuantity("shiny gold", 1))
+        println(bagsContainingShinyGold)
+        test("should contain the right quantity") {
+            bagsContainingShinyGold.map { it.quantity }.sum() shouldBe 126
+        }
+    }
+})
+
+
+class Day07_Part2_Exercise: FunSpec({
+    val input = readResource("day07Input.txt")!!
+    val bagSpecifications = parseBagSpecifications(input)
+    test("should have parsed all bag specifications") {
+        bagSpecifications.size shouldBe 594
+    }
+    val quantity = bagSpecifications.findAllBagsContainingWithQuantity(BagQuantity("shiny gold", 1)).map { it.quantity }.sum()
+    test("solution") {
+        quantity shouldBe 80902
     }
 })
