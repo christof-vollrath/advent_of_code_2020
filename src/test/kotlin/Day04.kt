@@ -298,7 +298,7 @@ class Day04_Part1 : FunSpec({
     }
 })
 
-class Day04_Part1_Exercise: FunSpec({
+class Day04_Part1_Excercise: FunSpec({
     val input = readResource("day04Input.txt")!!
     val count = countCheckedPassports(parsePassportStrings(input))
     test("solution") {
@@ -376,7 +376,7 @@ class Day04_Part2 : FunSpec({
     }
 })
 
-class Day04_Part2_Exercise: FunSpec({
+class Day04_Part2_Excercise: FunSpec({
     val input = readResource("day04Input.txt")!!
     val count = countValidPassports(parsePassportStrings(input))
     test("solution") {
