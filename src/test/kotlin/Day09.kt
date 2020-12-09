@@ -1,4 +1,3 @@
-import io.kotest.assertions.fail
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -61,6 +60,42 @@ the only number that does not follow this rule is 127.
 The first step of attacking the weakness in the XMAS data is to find the first number in the list (after the preamble)
 which is not the sum of two of the 25 numbers before it. What is the first number that does not have this property?
 
+--- Part Two ---
+
+The final step in breaking the XMAS encryption relies on the invalid number you just found:
+you must find a contiguous set of at least two numbers in your list which sum to the invalid number from step 1.
+
+Again consider the above example:
+
+35
+20
+15
+25
+47
+40
+62
+55
+65
+95
+102
+117
+150
+182
+127
+219
+299
+277
+309
+576
+
+In this list, adding up all of the numbers from 15 through 40 produces the invalid number from step 1, 127.
+(Of course, the contiguous set of numbers in your actual list might be much longer.)
+
+To find the encryption weakness, add together the smallest and largest number in this contiguous range;
+in this example, these are 15 and 47, producing 62.
+
+What is the encryption weakness in your XMAS-encrypted list of numbers?
+
  */
 
 private fun List<Long>.checkProperty(preamble: Int): List<Long> {
@@ -74,7 +109,7 @@ private fun List<Long>.checkProperty(preamble: Int): List<Long> {
         return false
     }
     return sequence {
-        (preamble until size).forEach { i ->
+        for (i in preamble until size) {
             val numbersToCheck = drop(i-preamble).take(preamble).toSet()
             val number = get(i)
             if (! checkNumber(number, numbersToCheck)) yield(number)
@@ -82,11 +117,31 @@ private fun List<Long>.checkProperty(preamble: Int): List<Long> {
     }.toList()
 }
 
+fun List<Long>.findWeakness(wrongNumber: Long): Set<Long> {
+    fun checkContiguousSet(from: Int): Set<Long>? {
+        var sum = 0L
+        val contiguousSet = sequence {
+            for (i in from until size) {
+                if (sum >= wrongNumber) break
+                val current = get(i)
+                yield(current)
+                sum += current
+            }
+        }.toSet()
+        return if (sum == wrongNumber) contiguousSet
+        else null
+    }
+    for(from in 0 until size-1) {
+        val contiguousSet = checkContiguousSet(from)
+        if (contiguousSet != null) return contiguousSet
+    }
+    throw IllegalArgumentException("no solution found")
+}
+
 fun parseNumbers(numbersString: String): List<Long> =
     numbersString.split("\n").map{ it.toLong() }
 
-class Day09_Part1 : FunSpec({
-    val numbersString = """
+val numbersString = """
         35
         20
         15
@@ -108,13 +163,15 @@ class Day09_Part1 : FunSpec({
         309
         576
     """.trimIndent()
+
+class Day09_Part1 : FunSpec({
     val numbers = parseNumbers(numbersString)
     context("parse numbers") {
         test("numbers parsed correctly") {
             numbers.size shouldBe 20
         }
     }
-    context("check numbers to have this property") {
+    context("check numbers which have not this property") {
         val exampleSolution = numbers.checkProperty(5)
         exampleSolution shouldBe setOf(127)
     }
@@ -126,5 +183,28 @@ class Day09_Part1_Exercise: FunSpec({
     val result = numbers.checkProperty(25)
     test("solution") {
         result.first() shouldBe 1721308972L
+    }
+})
+
+class Day09_Part2 : FunSpec({
+    val numbers = parseNumbers(numbersString)
+    context("find weakness") {
+        val wrongNumber = numbers.checkProperty(5).first()
+        val weakness = numbers.findWeakness(wrongNumber)
+        weakness.minOrNull() shouldBe 15
+        weakness.maxOrNull() shouldBe 47
+    }
+})
+
+class Day09_Part2_Exercise : FunSpec({
+    val input = readResource("day09Input.txt")!!
+    val numbers = parseNumbers(input)
+    val wrongNumber = numbers.checkProperty(25).first()
+    val weakness = numbers.findWeakness(wrongNumber)
+    val min = weakness.minOrNull()!!
+    val max = weakness.maxOrNull()!!
+    val solution = min + max
+    test("solution") {
+        solution shouldBe 209694133L
     }
 })
