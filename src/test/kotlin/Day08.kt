@@ -167,6 +167,25 @@ data class Jmp(val arg: Int) : ConsoleCommand {
     }
 }
 
+fun List<ConsoleCommand>.correct(): List<ConsoleCommand> {
+    for (i in 0 until size) {
+        val cmd = get(i)
+        if (cmd is Nop || cmd is Jmp) {
+            val changedProgram = toMutableList()
+            changedProgram[i] =
+                when(cmd)  {
+                    is Nop -> Jmp(cmd.arg)
+                    is Jmp -> Nop(cmd.arg)
+                    else -> throw InternalError("Must be nop or jmp")
+                }
+            try {
+                ConsoleCpu(changedProgram).execute()
+                return changedProgram
+            } catch (e: IllegalArgumentException) { } // Error, try next change
+        }
+    }
+    throw java.lang.IllegalArgumentException("No correction found")
+}
 
 class Day08_Part1 : FunSpec({
     val progString = """
@@ -239,23 +258,3 @@ class Day08_Part2_Exercise: FunSpec({
     console.execute()
     console.accu shouldBe 1235
 })
-
-private fun List<ConsoleCommand>.correct(): List<ConsoleCommand> {
-    for (i in 0 until size) {
-        val cmd = get(i)
-        if (cmd is Nop || cmd is Jmp) {
-            val changedProgram = toMutableList()
-            changedProgram[i] =
-                when(cmd)  {
-                    is Nop -> Jmp(cmd.arg)
-                    is Jmp -> Nop(cmd.arg)
-                    else -> throw InternalError("Must be nop or jmp")
-                }
-            try {
-                ConsoleCpu(changedProgram).execute()
-                return changedProgram
-            } catch (e: IllegalArgumentException) { } // Error, try next change
-        }
-    }
-    throw java.lang.IllegalArgumentException("No correction found")
-}
