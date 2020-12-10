@@ -98,7 +98,7 @@ What is the encryption weakness in your XMAS-encrypted list of numbers?
 
  */
 
-private fun List<Long>.checkProperty(preamble: Int): List<Long> {
+fun List<Long>.checkProperty(preamble: Int): List<Long> {
     fun checkNumber(nr: Long, numbersToCheck: Set<Long>): Boolean {
         numbersToCheck.forEach { numberToCheck ->
             val diff = nr - numberToCheck
