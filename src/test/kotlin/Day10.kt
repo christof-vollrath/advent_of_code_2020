@@ -105,6 +105,69 @@ Find a chain that uses all of your adapters to connect the charging outlet to yo
 and count the joltage differences between the charging outlet, the adapters, and your device.
 What is the number of 1-jolt differences multiplied by the number of 3-jolt differences?
 
+--- Part Two ---
+
+To completely determine whether you have enough adapters,
+you'll need to figure out how many different ways they can be arranged.
+Every arrangement needs to connect the charging outlet to your device.
+The previous rules about when adapters can successfully connect still apply.
+
+The first example above (the one that starts with 16, 10, 15) supports the following arrangements:
+
+(0), 1, 4, 5, 6, 7, 10, 11, 12, 15, 16, 19, (22)
+(0), 1, 4, 5, 6, 7, 10, 12, 15, 16, 19, (22)
+(0), 1, 4, 5, 7, 10, 11, 12, 15, 16, 19, (22)
+(0), 1, 4, 5, 7, 10, 12, 15, 16, 19, (22)
+(0), 1, 4, 6, 7, 10, 11, 12, 15, 16, 19, (22)
+(0), 1, 4, 6, 7, 10, 12, 15, 16, 19, (22)
+(0), 1, 4, 7, 10, 11, 12, 15, 16, 19, (22)
+(0), 1, 4, 7, 10, 12, 15, 16, 19, (22)
+
+(The charging outlet and your device's built-in adapter are shown in parentheses.)
+Given the adapters from the first example,
+the total number of arrangements that connect the charging outlet to your device is 8.
+
+The second example above (the one that starts with 28, 33, 18) has many arrangements.
+Here are a few:
+
+(0), 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 23, 24, 25, 28, 31,
+32, 33, 34, 35, 38, 39, 42, 45, 46, 47, 48, 49, (52)
+
+(0), 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 23, 24, 25, 28, 31,
+32, 33, 34, 35, 38, 39, 42, 45, 46, 47, 49, (52)
+
+(0), 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 23, 24, 25, 28, 31,
+32, 33, 34, 35, 38, 39, 42, 45, 46, 48, 49, (52)
+
+(0), 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 23, 24, 25, 28, 31,
+32, 33, 34, 35, 38, 39, 42, 45, 46, 49, (52)
+
+(0), 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 23, 24, 25, 28, 31,
+32, 33, 34, 35, 38, 39, 42, 45, 47, 48, 49, (52)
+
+(0), 3, 4, 7, 10, 11, 14, 17, 20, 23, 25, 28, 31, 34, 35, 38, 39, 42, 45,
+46, 48, 49, (52)
+
+(0), 3, 4, 7, 10, 11, 14, 17, 20, 23, 25, 28, 31, 34, 35, 38, 39, 42, 45,
+46, 49, (52)
+
+(0), 3, 4, 7, 10, 11, 14, 17, 20, 23, 25, 28, 31, 34, 35, 38, 39, 42, 45,
+47, 48, 49, (52)
+
+(0), 3, 4, 7, 10, 11, 14, 17, 20, 23, 25, 28, 31, 34, 35, 38, 39, 42, 45,
+47, 49, (52)
+
+(0), 3, 4, 7, 10, 11, 14, 17, 20, 23, 25, 28, 31, 34, 35, 38, 39, 42, 45,
+48, 49, (52)
+
+In total, this set of adapters can connect the charging outlet to your device in 19208 distinct arrangements.
+
+You glance back down at your bag and try to remember why you brought so many adapters;
+there must be more than a trillion valid ways to arrange them!
+Surely, there must be an efficient way to count the arrangements.
+
+What is the total number of distinct ways you can arrange the adapters to connect the charging outlet to your device?
+
  */
 
 
@@ -113,15 +176,10 @@ fun Set<Int>.findAdapterChain(start: Int): List<Pair<Int, Int>> {
     var currentJolts = start
     return sequence {
         while(currentSet.isNotEmpty()) {
-            println("findJoltageCandidates(currentJolts)=${findJoltageCandidates(currentJolts)}")
-            println("currentSet=$currentSet")
-            println("findJoltageCandidates(currentJolts).intersect(currentSet)=${findJoltageCandidates(currentJolts).intersect(currentSet)}")
-            val nextJolts = findJoltageCandidates(currentJolts).intersect(currentSet).sorted().firstOrNull() ?: throw IllegalStateException("No adapter for $currentJolts")
-            println("nextJolts = $nextJolts")
+            val nextJolts = findJoltageCandidates(currentJolts).intersect(currentSet).minOrNull() ?: throw IllegalStateException("No adapter for $currentJolts")
             yield(nextJolts - currentJolts to nextJolts)
             currentSet -= nextJolts
             currentJolts = nextJolts
-            println(currentSet)
         }
         yield(3 to currentJolts + 3)
     }.toList()
@@ -132,8 +190,69 @@ fun parseAdapters(numbersString: String) =
 
 fun findJoltageCandidates(jolts: Int): Set<Int> = (1..3).map { jolts + it }.toSet()
 
-class Day10_Part1 : FunSpec({
-    val numbersString = """
+fun Set<Int>.findAlternatives(): List<Pair<Int, Set<Int>>> {
+    val adapters = this + setOf(0)
+    val sortedAdapters = adapters.sorted()
+    return sequence {
+        for(currentAdapter in sortedAdapters) {
+            val nextAdapters = findJoltageCandidates(currentAdapter).intersect(this@findAlternatives)
+            yield(currentAdapter to nextAdapters)
+        }
+    }.toList()
+}
+
+fun findJoltageCandidatesBackwards(jolts: Int): Set<Int> = (1..3).map { jolts - it }.toSet()
+fun Set<Int>.findAlternativesBackwards(): Map<Int, Set<Int>> {
+    val adapters = this + setOf(0)
+    val sortedAdapters = this.sorted()
+    return sequence {
+        for(currentAdapter in sortedAdapters) {
+            val nextAdapters = findJoltageCandidatesBackwards(currentAdapter).intersect(adapters)
+            yield(currentAdapter to nextAdapters)
+        }
+    }.toMap()
+}
+
+fun Set<Int>.findCombinations(): List<Pair<Long, Int>> {
+    val reachableFrom = findAlternativesBackwards().toMap()
+    val numberOfCombinationsPerAdapter = linkedMapOf<Int, Long>(0 to 1)
+    for(adapter in this.sorted()) {
+        if (adapter == 0) continue
+        val adapterReachableFrom = reachableFrom[adapter] ?: throw IllegalStateException("Adapter $adapter can't be reached")
+        val numberOfCombinations = adapterReachableFrom.map { from ->
+            numberOfCombinationsPerAdapter[from] ?: throw IllegalStateException("Unknown combinations for $from")
+        }.sum()
+        numberOfCombinationsPerAdapter[adapter] = numberOfCombinations
+    }
+    return numberOfCombinationsPerAdapter.entries.map { it.value to it.key }
+}
+
+fun Set<Int>.findCombinationsDeprecated(): List<Pair<Long, Int>> {
+    val alternatives = findAlternatives()
+    val reachableFrom = alternatives.invertConnections()
+    val numberOfCombinationsPerAdapter = linkedMapOf(0 to 1L)
+    for(adapter in this.sorted()) {
+        if (adapter == 0) continue
+        val adapterReachableFrom = reachableFrom[adapter] ?: throw IllegalStateException("Adapter $adapter can't be reached")
+        val numberOfCombinations = adapterReachableFrom.map { from ->
+            numberOfCombinationsPerAdapter[from] ?: throw IllegalStateException("Unknown combinations for $from")
+        }.sum()
+        numberOfCombinationsPerAdapter[adapter] = numberOfCombinations
+    }
+    return numberOfCombinationsPerAdapter.entries.map { it.value to it.key }
+}
+
+fun List<Pair<Int, Set<Int>>>.invertConnections() =
+    flatMap { (adapter, connectedTos) ->
+        connectedTos.map { connectedTo ->
+            connectedTo to adapter
+        }.toSet()
+    }.groupBy { it.first }
+        .map { (adapter, connections) ->
+            adapter to connections.map { it.second }.toSet()
+        }.toMap()
+
+val adaptersString = """
         16
         10
         15
@@ -146,36 +265,8 @@ class Day10_Part1 : FunSpec({
         12
         4
     """.trimIndent()
-    val numbers = parseAdapters(numbersString)
-    context("find next joltage candidates for 0") {
-        val candidates = findJoltageCandidates(0)
-        candidates shouldBe setOf(1, 2, 3)
-    }
-    context("find next joltage candidates for 2") {
-        val candidates = findJoltageCandidates(2)
-        candidates shouldBe setOf(3, 4, 5)
-    }
-    context("find adapter chain") {
-        val chain = numbers.toSet().findAdapterChain(0)
-        chain shouldBe listOf(
-            1 to 1,
-            3 to 4,
-            1 to 5,
-            1 to 6,
-            1 to 7,
-            3 to 10,
-            1 to 11,
-            1 to 12,
-            3 to 15,
-            1 to 16,
-            3 to 19,
-            3 to 22
-        )
-        chain.filter { it.first == 1 }.count() shouldBe 7
-        chain.filter { it.first == 3 }.count() shouldBe 5
-    }
-    context("find adapter chain for larger example") {
-        val largerExample = """
+
+val largerExample = """
         28
         33
         18
@@ -208,13 +299,43 @@ class Day10_Part1 : FunSpec({
         10
         3
     """.trimIndent()
+
+class Day10_Part1 : FunSpec({
+    val numbers = parseAdapters(adaptersString)
+    context("find next joltage candidates for 0") {
+        val candidates = findJoltageCandidates(0)
+        candidates shouldBe setOf(1, 2, 3)
+    }
+    context("find next joltage candidates for 2") {
+        val candidates = findJoltageCandidates(2)
+        candidates shouldBe setOf(3, 4, 5)
+    }
+    context("find adapter chain") {
+        val chain = numbers.toSet().findAdapterChain(0)
+        chain shouldBe listOf(
+            1 to 1,
+            3 to 4,
+            1 to 5,
+            1 to 6,
+            1 to 7,
+            3 to 10,
+            1 to 11,
+            1 to 12,
+            3 to 15,
+            1 to 16,
+            3 to 19,
+            3 to 22
+        )
+        chain.filter { it.first == 1 }.count() shouldBe 7
+        chain.filter { it.first == 3 }.count() shouldBe 5
+    }
+    context("find adapter chain for larger example") {
         val largerExampleNumbers = parseAdapters(largerExample)
         val chain = largerExampleNumbers.toSet().findAdapterChain(0)
         chain.filter { it.first == 1 }.count() shouldBe 22
         chain.filter { it.first == 3 }.count() shouldBe 10
     }
 })
-
 
 class Day10_Part1_Exercise: FunSpec({
     val input = readResource("day10Input.txt")!!
@@ -227,4 +348,103 @@ class Day10_Part1_Exercise: FunSpec({
         result shouldBe 1984
     }
 
+})
+
+class Day10_Part2 : FunSpec({
+    val numbers = parseAdapters(adaptersString)
+    context("find alternatives for next adapter") {
+        val alternatives = numbers.toSet().findAlternatives()
+        alternatives shouldBe listOf(
+            0 to setOf(1),
+            1 to setOf(4), 
+            4 to setOf(5, 6, 7),
+            5 to setOf(6, 7),
+            6 to setOf(7),
+            7 to setOf(10),
+            10 to setOf(11, 12),
+            11 to setOf(12),
+            12 to setOf(15),
+            15 to setOf(16),
+            16 to setOf(19),
+            19 to setOf()
+        )
+        test("connections backwards") {
+            val alternativesBackwards = numbers.toSet().findAlternativesBackwards()
+            alternativesBackwards shouldBe mapOf(
+                1 to setOf(0),
+                4 to setOf(1),
+                5 to setOf(4),
+                6 to setOf(4, 5),
+                7 to setOf(4, 5, 6),
+                10 to setOf(7),
+                11 to setOf(10),
+                12 to setOf(10, 11),
+                15 to setOf(12),
+                16 to setOf(15),
+                19 to setOf(16)
+            )
+        }
+        context("invert connections") {
+            val inverted = alternatives.invertConnections()
+            test("inverted connections") {
+                inverted shouldBe mapOf(
+                    1 to setOf(0),
+                    4 to setOf(1),
+                    5 to setOf(4),
+                    6 to setOf(4, 5),
+                    7 to setOf(4, 5, 6),
+                    10 to setOf(7),
+                    11 to setOf(10),
+                    12 to setOf(10, 11),
+                    15 to setOf(12),
+                    16 to setOf(15),
+                    19 to setOf(16)
+                )
+            }
+        }
+        context("invert connections and connections should be equal") {
+            val largerExampleNumbers = parseAdapters(largerExample)
+            val alternativesBackwards = largerExampleNumbers.toSet().findAlternativesBackwards()
+            val inverted = largerExampleNumbers.toSet().findAlternatives().invertConnections()
+            alternativesBackwards shouldBe inverted
+        }
+    }
+    context("find combinations for adapters") {
+        val combinations = numbers.toSet().findCombinationsDeprecated()
+        combinations shouldBe listOf(
+            1L to 0,
+            1L to 1,
+            1L to 4,
+            1L to 5,
+            2L to 6,
+            4L to 7,
+            4L to 10,
+            4L to 11,
+            8L to 12,
+            8L to 15,
+            8L to 16,
+            8L to 19,
+        )
+        numbers.toSet().findCombinations() shouldBe combinations
+    }
+    context("find combinations for adapters in larger example") {
+        val largerExampleNumbers = parseAdapters(largerExample)
+        val combinations = largerExampleNumbers.toSet().findCombinations()
+        combinations.last().first shouldBe 19208L
+    }
+    context("find combinations for adapters in larger example (deprecated)") {
+        val largerExampleNumbers = parseAdapters(largerExample)
+        val combinations = largerExampleNumbers.toSet().findCombinationsDeprecated()
+        combinations.last().first shouldBe 19208L
+    }
+})
+
+class Day10_Part2_Exercise: FunSpec({
+    val input = readResource("day10Input.txt")!!
+    val numbers = parseAdapters(input)
+    val combinations = numbers.toSet().findCombinations()
+    val result = combinations.last().first
+    test("solution") {
+        result shouldBe 3543369523456L
+    }
 })
