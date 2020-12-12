@@ -77,6 +77,7 @@ L.#.#..#..
 #L######L#
 #.LL###L.L
 #.#L###.##
+
 #.#L.L#.##
 #LLL#LL.L#
 L.L.L..#..
@@ -87,6 +88,7 @@ L.L.L..#..
 #L#LLLL#L#
 #.LLLLLL.L
 #.#L#L#.##
+
 #.#L.L#.##
 #LLL#LL.L#
 L.#.L..#..
@@ -105,25 +107,158 @@ Once people stop moving around, you count 37 occupied seats.
 Simulate your seating area by applying the seating rules repeatedly until no seats change state.
 How many seats end up occupied?
 
-To begin, get your puzzle input.
+--- Part Two ---
+
+As soon as people start to arrive, you realize your mistake.
+People don't just care about adjacent seats
+- they care about the first seat they can see in each of those eight directions!
+
+Now, instead of considering just the eight immediately adjacent seats,
+consider the first seat in each of those eight directions.
+For example, the empty seat below would see eight occupied seats:
+
+.......#.
+...#.....
+.#.......
+.........
+..#L....#
+....#....
+.........
+#........
+...#.....
+
+The leftmost empty seat below would only see one empty seat, but cannot see any of the occupied ones:
+
+.............
+.L.L.#.#.#.#.
+.............
+
+The empty seat below would see no occupied seats:
+
+.##.##.
+#.#.#.#
+##...##
+...L...
+##...##
+#.#.#.#
+.##.##.
+
+Also, people seem to be more tolerant than you expected:
+it now takes five or more visible occupied seats for an occupied seat to become empty
+(rather than four or more from the previous rules).
+The other rules still apply: empty seats that see no occupied seats become occupied,
+seats matching no rule don't change, and floor never changes.
+
+Given the same starting layout as above, these new rules cause the seating area to shift around as follows:
+
+L.LL.LL.LL
+LLLLLLL.LL
+L.L.L..L..
+LLLL.LL.LL
+L.LL.LL.LL
+L.LLLLL.LL
+..L.L.....
+LLLLLLLLLL
+L.LLLLLL.L
+L.LLLLL.LL
+
+#.##.##.##
+#######.##
+#.#.#..#..
+####.##.##
+#.##.##.##
+#.#####.##
+..#.#.....
+##########
+#.######.#
+#.#####.##
+
+#.LL.LL.L#
+#LLLLLL.LL
+L.L.L..L..
+LLLL.LL.LL
+L.LL.LL.LL
+L.LLLLL.LL
+..L.L.....
+LLLLLLLLL#
+#.LLLLLL.L
+#.LLLLL.L#
+
+#.L#.##.L#
+#L#####.LL
+L.#.#..#..
+##L#.##.##
+#.##.#L.##
+#.#####.#L
+..#.#.....
+LLL####LL#
+#.L#####.L
+#.L####.L#
+
+#.L#.L#.L#
+#LLLLLL.LL
+L.L.L..#..
+##LL.LL.L#
+L.LL.LL.L#
+#.LLLLL.LL
+..L.L.....
+LLLLLLLLL#
+#.LLLLL#.L
+#.L#LL#.L#
+
+#.L#.L#.L#
+#LLLLLL.LL
+L.L.L..#..
+##L#.#L.L#
+L.L#.#L.L#
+#.L####.LL
+..#.#.....
+LLL###LLL#
+#.LLLLL#.L
+#.L#LL#.L#
+
+#.L#.L#.L#
+#LLLLLL.LL
+L.L.L..#..
+##L#.#L.L#
+L.L#.LL.L#
+#.LLLL#.LL
+..#.L.....
+LLL###LLL#
+#.LLLLL#.L
+#.L#LL#.L#
+
+Again, at this point, people stop shifting around and the seating area reaches equilibrium.
+Once this occurs, you count 26 occupied seats.
+
+Given the new visibility method and the rule change for occupied seats becoming empty,
+once equilibrium is reached, how many seats end up occupied?
+
  */
 
 fun List<List<Char>>.countOccupied() = flatten().count { it == '#' }
 
-fun repeatRoundsUntilNothingChanges(waitingArea: List<List<Char>>): Pair<List<List<Char>>, Int> {
+typealias OneRound = List<List<Char>>.() -> List<List<Char>>
+
+fun repeatRoundsUntilNothingChanges(waitingArea: List<List<Char>>, oneRoundPar: OneRound = List<List<Char>>::oneRound1): Pair<List<List<Char>>, Int> {
     var recentWaitingArea = waitingArea
-    var rounds = 0
+    var round = 0
     while(true) {
-        val nextWaitingArea = recentWaitingArea.oneRound()
-        if (nextWaitingArea == recentWaitingArea) return recentWaitingArea to rounds
+        val nextWaitingArea = recentWaitingArea.oneRoundPar()
+        if (nextWaitingArea == recentWaitingArea) return recentWaitingArea to round
         recentWaitingArea = nextWaitingArea
-        rounds++
+        round++
     }
 }
 
-fun List<List<Char>>.oneRound(): List<List<Char>> = mapIndexed { y, line ->
+typealias NeighborFinder = List<List<Char>>.(x: Int, y: Int) -> List<Char>
+typealias Rule = (c: Char, neighbors: List<Char>) -> Char
+
+fun List<List<Char>>.oneRound1(): List<List<Char>> = oneRound(List<List<Char>>::neighbors8, ::rule)
+
+fun List<List<Char>>.oneRound(neighborsFinder: NeighborFinder = (List<List<Char>>::neighbors8), rule: Rule = ::rule): List<List<Char>> = mapIndexed { y, line ->
     line.mapIndexed { x, c->
-        rule(c, neighbors8(x, y))
+        rule(c, neighborsFinder(x, y))
     }
 }
 
@@ -147,6 +282,33 @@ fun List<List<Char>>.toPrintableString(): String = joinToString("\n") { line ->
 
 fun parseWaitingArea(waitingAreaString: String): List<List<Char>>
         = waitingAreaString.split("\n").map { it.trim().toList() }
+
+fun findVisibleOccupiedSeats(coord2: Coord2, waitingArea: List<List<Char>>): List<Char> {
+    fun followOffset(coord2: Coord2, offset: Coord2): Char? {
+        var currentPos = coord2 + offset
+        while(true) {
+            val c = waitingArea.getOrNull(currentPos) ?: return null
+            if (c in setOf('L', '#')) return c
+            currentPos += offset
+        }
+    }
+    return Coord2.neighbor8Offsets.mapNotNull { offset ->
+        followOffset(coord2, offset)
+    }
+}
+
+fun List<List<Char>>.visibleNeighbors(x: Int, y: Int): List<Char> =
+    findVisibleOccupiedSeats(Coord2(x, y), this)
+
+
+fun rule2(c: Char, neighbors: List<Char>) =
+    when (c) {
+        'L' -> if(neighbors.countOccupied() == 0) '#'
+        else c
+        '#' -> if(neighbors.countOccupied() >= 5) 'L'
+        else c
+        else -> c
+    }
 
 class Day11_Part1 : FunSpec({
     val waitingAreaString = """
@@ -231,12 +393,147 @@ class Day11_Part1 : FunSpec({
     }
 })
 
-
 class Day11_Part1_Exercise: FunSpec({
     val input = readResource("day11Input.txt")!!
     val waitingArea = parseWaitingArea(input)
     val (result, _) = repeatRoundsUntilNothingChanges(waitingArea)
     test("should have correct number of occupied seats") {
         result.countOccupied() shouldBe 2476
+    }
+})
+
+class Day11_Part2 : FunSpec({
+    context("find visible occupied seats") {
+        context("occupied seats in every direction") {
+            val waitingArea = parseWaitingArea("""
+            .......#.
+            ...#.....
+            .#.......
+            .........
+            ..#L....#
+            ....#....
+            .........
+            #........
+            ...#.....       
+            """.trimIndent())
+            test("should find all eight seats") {
+                val visibleSeats = findVisibleOccupiedSeats(Coord2(3, 4), waitingArea)
+                visibleSeats.size shouldBe 8
+            }
+        }
+        context("one occupied seat visible") {
+            val waitingArea = parseWaitingArea("""
+            .............
+            .L.L.#.#.#.#.
+            .............
+            """.trimIndent())
+            test("should see one occupied seats") {
+                val visibleSeats = findVisibleOccupiedSeats(Coord2(1, 1), waitingArea)
+                visibleSeats.size shouldBe 1
+                visibleSeats[0] shouldBe 'L'
+            }
+        }
+        context("no occupied seat visible") {
+            val waitingArea = parseWaitingArea("""
+                .##.##.
+                #.#.#.#
+                ##...##
+                ...L...
+                ##...##
+                #.#.#.#
+                .##.##.
+            """.trimIndent())
+            test("should find all eight seats") {
+                val visibleSeats = findVisibleOccupiedSeats(Coord2(3, 3), waitingArea)
+                visibleSeats.size shouldBe 0
+            }
+        }
+    }
+    val waitingAreaString = """
+        L.LL.LL.LL
+        LLLLLLL.LL
+        L.L.L..L..
+        LLLL.LL.LL
+        L.LL.LL.LL
+        L.LLLLL.LL
+        ..L.L.....
+        LLLLLLLLLL
+        L.LLLLLL.L
+        L.LLLLL.LL
+        """.trimIndent()
+    context("occupation 2") {
+        var currentWaitingArea = parseWaitingArea(waitingAreaString)
+        context("one occupation round") {
+            currentWaitingArea = currentWaitingArea.oneRound(List<List<Char>>::visibleNeighbors, ::rule2)
+            test("should be occupied correctly") {
+                currentWaitingArea.toPrintableString() shouldBe """
+                #.##.##.##
+                #######.##
+                #.#.#..#..
+                ####.##.##
+                #.##.##.##
+                #.#####.##
+                ..#.#.....
+                ##########
+                #.######.#
+                #.#####.##
+                """.trimIndent()
+            }
+        }
+        context("second occupation round") {
+            currentWaitingArea = currentWaitingArea.oneRound(List<List<Char>>::visibleNeighbors, ::rule2)
+            test("should be occupied correctly") {
+                currentWaitingArea.toPrintableString() shouldBe """
+                #.LL.LL.L#
+                #LLLLLL.LL
+                L.L.L..L..
+                LLLL.LL.LL
+                L.LL.LL.LL
+                L.LLLLL.LL
+                ..L.L.....
+                LLLLLLLLL#
+                #.LLLLLL.L
+                #.LLLLL.L#
+                """.trimIndent()
+            }
+        }
+        context("third occupation round") {
+            currentWaitingArea = currentWaitingArea.oneRound(List<List<Char>>::visibleNeighbors, ::rule2)
+            test("should be occupied correctly") {
+                currentWaitingArea.toPrintableString() shouldBe """
+                #.L#.##.L#
+                #L#####.LL
+                L.#.#..#..
+                ##L#.##.##
+                #.##.#L.##
+                #.#####.#L
+                ..#.#.....
+                LLL####LL#
+                #.L#####.L
+                #.L####.L#
+                """.trimIndent()
+            }
+        }
+    }
+    context("occupation until nothing changes") {
+        fun List<List<Char>>.oneRound2(): List<List<Char>> = oneRound(List<List<Char>>::visibleNeighbors, ::rule2)
+        val waitingArea = parseWaitingArea(waitingAreaString)
+        val (result, rounds) = repeatRoundsUntilNothingChanges(waitingArea, List<List<Char>>::oneRound2)
+        test("should have taken 6 rounds") {
+            rounds shouldBe 6
+        }
+        test("should have 26 occupied seats") {
+            result.countOccupied() shouldBe 26
+        }
+    }
+})
+
+class Day11_Part2_Exercise: FunSpec({
+    val input = readResource("day11Input.txt")!!
+    val waitingArea = parseWaitingArea(input)
+    fun List<List<Char>>.oneRound2(): List<List<Char>> = oneRound(List<List<Char>>::visibleNeighbors, ::rule2)
+    val (result, _) = repeatRoundsUntilNothingChanges(waitingArea, List<List<Char>>::oneRound2)
+    test("should have correct number of occupied seats") {
+        result.countOccupied() shouldBe 2257
     }
 })
