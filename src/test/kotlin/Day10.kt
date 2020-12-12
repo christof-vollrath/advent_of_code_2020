@@ -347,7 +347,6 @@ class Day10_Part1_Exercise: FunSpec({
     test("solution") {
         result shouldBe 1984
     }
-
 })
 
 class Day10_Part2 : FunSpec({

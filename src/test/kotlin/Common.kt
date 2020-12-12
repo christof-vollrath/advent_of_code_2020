@@ -81,13 +81,23 @@ data class Coord2(val x: Int, val y: Int) {
     fun neighbors() = neighborOffsets.map { neighborOffset ->
         this + neighborOffset
     }
+    fun neighbors8() = neighbor8Offsets.map { neighborOffset ->
+        this + neighborOffset
+    }
+
     companion object {
         val neighborOffsets = listOf(Coord2(-1, 0), Coord2(1, 0), Coord2(0, -1), Coord2(0, 1))
+        val neighbor8Offsets = (-1..1).flatMap { y ->
+            (-1..1).mapNotNull { x ->
+                if (x != 0 || y != 0) Coord2(x, y)
+                else null
+            }
+        }
     }
 }
 
 fun <E> List<List<E>>.getOrNull(coord: Coord2): E? {
-    return if ( !(coord.y in 0 until size)) null
+    return if (coord.y !in 0 until size) null
     else {
         val row = get(coord.y)
         if ( ! (0 <= coord.x && coord.x < row.size)) null
