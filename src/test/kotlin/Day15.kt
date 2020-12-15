@@ -60,6 +60,21 @@ Given your starting numbers, what will be the 2020th number spoken?
 
 Your puzzle input is 2,0,1,9,5,19.
 
+--- Part Two ---
+
+Impressed, the Elves issue you a challenge: determine the 30000000th number spoken.
+For example, given the same starting numbers as above:
+
+Given 0,3,6, the 30000000th number spoken is 175594.
+Given 1,3,2, the 30000000th number spoken is 2578.
+Given 2,1,3, the 30000000th number spoken is 3544142.
+Given 1,2,3, the 30000000th number spoken is 261214.
+Given 2,3,1, the 30000000th number spoken is 6895259.
+Given 3,2,1, the 30000000th number spoken is 18.
+Given 3,1,2, the 30000000th number spoken is 362.
+
+Given your starting numbers, what will be the 30000000th number spoken?
+
  */
 
 fun playMemGame(start: List<Int>): Sequence<Int> {
@@ -115,5 +130,30 @@ class Day15_Part1_Exercise: FunSpec({
     val solution = playMemGame(listOf(2,0,1,9,5,19)).drop(2019).first()
     test("should have found solution") {
         solution shouldBe 1009
+    }
+})
+
+class Day15_Part2 : FunSpec({
+    xcontext("longer examples") { // This will take 90s
+        table(
+            headers("starting numbers", "expected"),
+            row(listOf(0,3,6), 175594),
+            row(listOf(1,3,2), 2578),
+            row(listOf(2,1,3), 3544142),
+            row(listOf(1,2,3), 261214),
+            row(listOf(2,3,1), 6895259),
+            row(listOf(3,2,1), 18),
+            row(listOf(3,1,2), 362),
+        ).forAll { start, expected ->
+            val result = playMemGame(start)
+            result.drop(30_000_000 - 1).first() shouldBe expected
+        }
+    }
+})
+
+class Day15_Part2_Exercise: FunSpec({
+    val solution = playMemGame(listOf(2,0,1,9,5,19)).drop(30_000_000 - 1).first()
+    test("should have found solution") {
+        solution shouldBe 62714
     }
 })
