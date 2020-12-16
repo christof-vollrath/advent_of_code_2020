@@ -65,7 +65,78 @@ Adding together all of the invalid values produces your ticket scanning error ra
 
 Consider the validity of the nearby tickets you scanned. What is your ticket scanning error rate?
 
+--- Part Two ---
+
+Now that you've identified which tickets contain invalid values, discard those tickets entirely.
+Use the remaining valid tickets to determine which field is which.
+
+Using the valid ranges for each field, determine what order the fields appear on the tickets.
+The order is consistent between all tickets: if seat is the third field, it is the third field on every ticket,
+including your ticket.
+
+For example, suppose you have the following notes:
+
+class: 0-1 or 4-19
+row: 0-5 or 8-19
+seat: 0-13 or 16-19
+
+your ticket:
+11,12,13
+
+nearby tickets:
+3,9,18
+15,1,5
+5,14,9
+
+Based on the nearby tickets in the above example, the first position must be row, the second position must be class,
+and the third position must be seat; you can conclude that in your ticket, class is 12, row is 11, and seat is 13.
+
+Once you work out which field is which, look for the six fields on your ticket that start with the word departure.
+What do you get if you multiply those six values together?
+
+--- Part Two ---
+
+Now that you've identified which tickets contain invalid values, discard those tickets entirely.
+Use the remaining valid tickets to determine which field is which.
+
+Using the valid ranges for each field, determine what order the fields appear on the tickets.
+The order is consistent between all tickets: if seat is the third field, it is the third field on every ticket,
+including your ticket.
+
+For example, suppose you have the following notes:
+
+class: 0-1 or 4-19
+row: 0-5 or 8-19
+seat: 0-13 or 16-19
+
+your ticket:
+11,12,13
+
+nearby tickets:
+3,9,18
+15,1,5
+5,14,9
+
+Based on the nearby tickets in the above example, the first position must be row,
+the second position must be class, and the third position must be seat;
+you can conclude that in your ticket, class is 12, row is 11, and seat is 13.
+
+Once you work out which field is which, look for the six fields on your ticket that start with the word departure.
+What do you get if you multiply those six values together?
+
+
  */
+
+fun  List<List<Int>>.filterTicketsSatisfyingAnyRule(rules: List<TicketRule>): List<List<Int>> =
+    filter { ticket ->
+        ticket.all { value ->
+            rules.any { rule ->
+                rule.ranges.any { range ->
+                    value in range
+                }
+            }
+        }
+    }
 
 fun  List<List<Int>>.filterValuesNotSatisfyingAllRules(rules: List<TicketRule>): List<List<Int>> =
     map { ticket ->
@@ -99,7 +170,7 @@ fun parseTicket(ticketString: String): List<Int> = ticketString.split(",").map {
 }
 
 fun parseTicketRule(ticketRuleString: String): TicketRule {
-    val regex = """(\w+): (\d+)-(\d+) or (\d+)-(\d+)""".toRegex()
+    val regex = """([a-z0-9 ]+): (\d+)-(\d+) or (\d+)-(\d+)""".toRegex()
     val match = regex.find(ticketRuleString) ?: throw IllegalArgumentException("Can not parse input=$ticketRuleString")
     if (match.groupValues.size != 6) throw IllegalArgumentException("Wrong number of elements parsed")
     val name = match.groupValues[1]
@@ -114,6 +185,30 @@ fun parseTicketRule(ticketRuleString: String): TicketRule {
 }
 
 data class TicketRule(val name: String, val ranges: List<IntRange>)
+
+fun findRuleForRows(yourTicket: List<Int>, tickets: List<List<Int>>, rules: List<TicketRule>): Map<String, Int> {
+    val ruleForColumnMap = mutableMapOf<TicketRule, Int>()
+    while (ruleForColumnMap.size < yourTicket.size) {
+        for (columnIndex in yourTicket.indices) {
+            val rulesForColumn = findRuleForColumn(tickets, rules, columnIndex)
+            val filteredRulesForColumn = rulesForColumn - ruleForColumnMap.keys // Ignore already found rules
+            if (filteredRulesForColumn.size == 1) { // Found a unique rule
+                val rule = filteredRulesForColumn.first()
+                ruleForColumnMap[rule] = columnIndex
+            }
+        }
+    }
+    return ruleForColumnMap.entries.map { (key, value) -> key.name to yourTicket[value] }.toMap()
+}
+
+fun findRuleForColumn(tickets: List<List<Int>>, rules: List<TicketRule>, columnIndex: Int): List<TicketRule> {
+    val column = tickets.map { it[columnIndex] }
+    return rules.filter { rule ->
+        column.all { value ->
+            rule.ranges.any { range -> value in range}
+        }
+    }
+}
 
 class Day16_Part1 : FunSpec({
     val exampleString = """
@@ -131,12 +226,20 @@ class Day16_Part1 : FunSpec({
     38,6,12        
     """.trimIndent()
     context("parse train tickets") {
-        context("parse ticket rules") {
+        context("parse ticket rule class") {
             val ticketRuleString = "class: 1-3 or 5-7"
             val ticketRule = parseTicketRule(ticketRuleString)
             test("ticket rule is parsed correctly") {
                 ticketRule.name shouldBe "class"
                 ticketRule.ranges shouldBe listOf(1..3, 5..7)
+            }
+        }
+        context("parse ticket rule departure location") {
+            val ticketRuleString = "departure location: 27-374 or 395-974"
+            val ticketRule = parseTicketRule(ticketRuleString)
+            test("ticket rule is parsed correctly") {
+                ticketRule.name shouldBe "departure location"
+                ticketRule.ranges shouldBe listOf(27..374, 395..974)
             }
         }
         context("parse ticket") {
@@ -157,6 +260,15 @@ class Day16_Part1 : FunSpec({
             }
         }
     }
+    context("filter valid tickets") {
+        val notes = parseTrainTicketNotes(exampleString)
+        val filtered = notes.nearbyTickets.filterTicketsSatisfyingAnyRule(notes.rules)
+        test("should have filtered values") {
+            filtered shouldBe listOf(
+                listOf(7, 3, 47)
+            )
+        }
+    }
     context("filter invalid tickets") {
         val notes = parseTrainTicketNotes(exampleString)
         val filtered = notes.nearbyTickets.filterValuesNotSatisfyingAllRules(notes.rules)
@@ -175,5 +287,51 @@ class Day16_Part1_Exercise: FunSpec({
     val filtered = notes.nearbyTickets.filterValuesNotSatisfyingAllRules(notes.rules)
     test("should have calculated correct sum") {
         filtered.flatten().sum() shouldBe 26941
+    }
+})
+
+class Day16_Part2 : FunSpec({
+    val exampleString = """
+    class: 0-1 or 4-19
+    row: 0-5 or 8-19
+    seat: 0-13 or 16-19
+    
+    your ticket:
+    11,12,13
+    
+    nearby tickets:
+    3,9,18
+    15,1,5
+    5,14,9
+    """.trimIndent()
+    val notes = parseTrainTicketNotes(exampleString)
+    context("find rules for row") {
+        val rules = findRuleForColumn(notes.nearbyTickets, notes.rules, 0)
+        test("should have found rules") {
+            rules.first().name shouldBe "row"
+        }
+    }
+    context("find rules for rows") {
+        val columnMapping = findRuleForRows(notes.yourTicket, notes.nearbyTickets, notes.rules)
+        test("should have found mappings") {
+            columnMapping shouldBe mapOf(
+                "class" to 12,
+                "row" to 11,
+                "seat" to 13
+            )
+        }
+    }
+})
+
+class Day16_Part2_Exercise: FunSpec({
+    val input = readResource("day16Input.txt")!!
+    val notes = parseTrainTicketNotes(input)
+    val filteredTickets = notes.nearbyTickets.filterTicketsSatisfyingAnyRule(notes.rules)
+    val columnMapping = findRuleForRows(notes.yourTicket, filteredTickets, notes.rules)
+    val columnMappingDeparture = columnMapping.entries.filter { (key, _) -> key.startsWith("departure") }
+    println(columnMappingDeparture)
+    val solution = columnMappingDeparture.map { (_, value) -> value }.map { it.toLong() }.reduce { a, b -> a * b}
+    test("should have calculated correct solution") {
+        solution shouldBe 634796407951L
     }
 })
