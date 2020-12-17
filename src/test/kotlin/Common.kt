@@ -106,16 +106,64 @@ data class Coord2(val x: Int, val y: Int) {
             listOf(0, -1),
             listOf(1, 0)
         )
-
     }
 }
+typealias Plane<E>  = List<List<E>>
 
-fun <E> List<List<E>>.getOrNull(coord: Coord2): E? {
+fun <E> Plane<E>.getOrNull(coord: Coord2): E? {
     return if (coord.y !in 0 until size) null
     else {
         val row = get(coord.y)
         if ( ! (0 <= coord.x && coord.x < row.size)) null
         else row[coord.x]
+    }
+}
+
+data class Coord3(val x: Int, val y: Int, val z: Int) {
+    operator fun plus(direction: Coord3) = Coord3(x + direction.x, y + direction.y, z + direction.z)
+    operator fun minus(direction: Coord3) = Coord3(x - direction.x, y - direction.y, z - direction.z)
+    operator fun times(n: Int) = Coord3(x * n, y * n, z * n)
+    fun neighbors() = neighborOffsets.map { neighborOffset ->
+        this + neighborOffset
+    }
+    fun neighbors26() = neighbor26Offsets.map { neighborOffset ->
+        this + neighborOffset
+    }
+
+    companion object {
+        val neighborOffsets = listOf(Coord3(-1, 0, 0), Coord3(1, 0, 0), Coord3(0, -1, 0), Coord3(0, 0, 1), Coord3(0, 0, -1), Coord3(0, 0, 1))
+        val neighbor26Offsets = (-1..1).flatMap { y ->
+            (-1..1).flatMap { x ->
+                (-1..1).mapNotNull { z ->
+                    if (x != 0 || y != 0 || z != 0) Coord3(x, y, z)
+                    else null
+                }
+            }
+        }
+        val turnMatrixLeft = listOf(
+            listOf(0, 1),
+            listOf(-1, 0)
+        )
+        val turnMatrixRight = listOf(
+            listOf(0, -1),
+            listOf(1, 0)
+        )
+
+    }
+}
+
+typealias Cube<E>  = List<List<List<E>>>
+
+fun <E> Cube<E>.getOrNull(coord: Coord3): E? {
+    return if (coord.z !in this.indices) null
+    else {
+        val layer = this[coord.z]
+        if (coord.y !in layer.indices) null
+        else {
+            val row = layer[coord.y]
+            if (!(0 <= coord.x && coord.x < row.size)) null
+            else row[coord.x]
+        }
     }
 }
 
