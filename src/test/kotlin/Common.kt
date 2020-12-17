@@ -132,23 +132,14 @@ data class Coord3(val x: Int, val y: Int, val z: Int) {
 
     companion object {
         val neighborOffsets = listOf(Coord3(-1, 0, 0), Coord3(1, 0, 0), Coord3(0, -1, 0), Coord3(0, 0, 1), Coord3(0, 0, -1), Coord3(0, 0, 1))
-        val neighbor26Offsets = (-1..1).flatMap { y ->
-            (-1..1).flatMap { x ->
-                (-1..1).mapNotNull { z ->
+        val neighbor26Offsets = (-1..1).flatMap { z ->
+            (-1..1).flatMap { y ->
+                (-1..1).mapNotNull { x ->
                     if (x != 0 || y != 0 || z != 0) Coord3(x, y, z)
                     else null
                 }
             }
         }
-        val turnMatrixLeft = listOf(
-            listOf(0, 1),
-            listOf(-1, 0)
-        )
-        val turnMatrixRight = listOf(
-            listOf(0, -1),
-            listOf(1, 0)
-        )
-
     }
 }
 
@@ -163,6 +154,26 @@ fun <E> Cube<E>.getOrNull(coord: Coord3): E? {
             val row = layer[coord.y]
             if (!(0 <= coord.x && coord.x < row.size)) null
             else row[coord.x]
+        }
+    }
+}
+
+data class Coord4(val x: Int, val y: Int, val z: Int, val w: Int) {
+    operator fun plus(direction: Coord4) = Coord4(x + direction.x, y + direction.y, z + direction.z, w + direction.w)
+    fun neighbors80() = neighbor80Offsets.map { neighborOffset ->
+        this + neighborOffset
+    }
+
+    companion object {
+        val neighbor80Offsets = (-1..1).flatMap { w ->
+            (-1..1).flatMap { z ->
+                (-1..1).flatMap { y ->
+                    (-1..1).mapNotNull { x ->
+                        if (x != 0 || y != 0 || z != 0 || w != 0) Coord4(x, y, z, w)
+                        else null
+                    }
+                }
+            }
         }
     }
 }

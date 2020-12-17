@@ -152,8 +152,10 @@ class Day15_Part2 : FunSpec({
 })
 
 class Day15_Part2_Exercise: FunSpec({
-    val solution = playMemGame(listOf(2,0,1,9,5,19)).drop(30_000_000 - 1).first()
-    test("should have found solution") {
-        solution shouldBe 62714
+    xcontext("part 2") {// will take 22s
+        val solution = playMemGame(listOf(2,0,1,9,5,19)).drop(30_000_000 - 1).first()
+        test("should have found solution") {
+            solution shouldBe 62714
+        }
     }
 })
