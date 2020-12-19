@@ -29,6 +29,15 @@ fun <E> List<E>.permute():List<List<E>> {
     return perms
 }
 
+fun <E> combine(e: Collection<Collection<E>>): Collection<Collection<E>> =
+    if (e.isEmpty()) listOf(emptyList())
+    else {
+        e.first().flatMap { firstVariant ->
+            combine(e.drop(1)).map {
+                listOf(firstVariant) + it
+            }
+        }
+    }
 
 tailrec fun gcd(a: Int, b: Int): Int = // Greatest Common Divisor (Euclid, see: https://en.wikipedia.org/wiki/Greatest_common_divisor)
     when {
