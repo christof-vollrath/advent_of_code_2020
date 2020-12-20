@@ -16,6 +16,19 @@ fun <T> List<List<T>>.transpose(): List<List<T>> {
     return result
 }
 
+fun <E> List<List<E>>.turnRight(): List<List<E>> {
+    val result = mutableListOf<List<E>>()
+    val n = this[0].size
+    for (x in  0 until n) {
+        val col = mutableListOf<E>()
+        for (y in  (n-1) downTo 0) {
+            col.add(this[y][x])
+        }
+        result.add(col)
+    }
+    return result
+}
+
 fun <E> List<E>.permute():List<List<E>> {
     if (size == 1) return listOf(this)
     val perms = mutableListOf<List<E>>()
