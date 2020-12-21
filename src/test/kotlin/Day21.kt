@@ -42,6 +42,24 @@ they all appear once each except sbzzf, which appears twice.
 Determine which ingredients cannot possibly contain any of the allergens in your list.
 How many times do any of those ingredients appear?
 
+--- Part Two ---
+
+Now that you've isolated the inert ingredients,
+you should have enough information to figure out which ingredient contains which allergen.
+
+In the above example:
+
+mxmxvkd contains dairy.
+sqjhc contains fish.
+fvjkl contains soy.
+
+Arrange the ingredients alphabetically by their allergen
+and separate them by commas to produce your canonical dangerous ingredient list.
+(There should not be any spaces in your canonical dangerous ingredient list.)
+In the above example, this would be mxmxvkd,sqjhc,fvjkl.
+
+Time to stock your raft with supplies. What is your canonical dangerous ingredient list?
+
  */
 
 
@@ -114,6 +132,11 @@ fun parseIngredients(ingredientsString: String): FoodInformation {
 
 data class FoodInformation(val ingredients: Set<String>, val allergens: Set<String>)
 
+fun List<FoodInformation>.ingredientsSortedByAllergens(): List<String> {
+    val allergensUniqueInIngredients = findAllergensUniqueInIngredients()
+    return allergensUniqueInIngredients.entries.sortedBy { it.key }.map { it.value }
+}
+
 class Day21_Part1 : FunSpec({
     context("parse ingredients") {
         val foodInformationString = "mxmxvkd kfcds sqjhc nhms (contains dairy, fish)"
@@ -176,3 +199,29 @@ class Day21_Part1_Exercise: FunSpec({
         solution shouldBe 1679
     }
 })
+
+class Day21_Part2: FunSpec({
+    val foodLinesString = """
+        mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
+        trh fvjkl sbzzf mxmxvkd (contains dairy)
+        sqjhc fvjkl (contains soy)
+        sqjhc mxmxvkd sbzzf (contains fish)
+        """.trimIndent()
+    val foodLines = parseFoodLines(foodLinesString)
+    val ingredientsWithAllergens = foodLines.ingredientsSortedByAllergens()
+    val ingredientsWithAllergensString = ingredientsWithAllergens.joinToString(",")
+    test("should have created the correct ingredients string") {
+        ingredientsWithAllergensString shouldBe "mxmxvkd,sqjhc,fvjkl"
+    }
+})
+
+class Day21_Part2_Exercise: FunSpec({
+    val input = readResource("day21Input.txt")!!
+    val foodLines = parseFoodLines(input)
+    val ingredientsWithAllergens = foodLines.ingredientsSortedByAllergens()
+    val ingredientsWithAllergensString = ingredientsWithAllergens.joinToString(",")
+    test("should have created the correct ingredients string") {
+        ingredientsWithAllergensString shouldBe "lmxt,rggkbpj,mxf,gpxmf,nmtzlj,dlkxsxg,fvqg,dxzq"
+    }
+})
+
