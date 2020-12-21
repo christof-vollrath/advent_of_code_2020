@@ -184,12 +184,115 @@ If you do this with the assembled tiles from the example above, you get 1951 * 3
 
 Assemble the tiles into an image. What do you get if you multiply together the IDs of the four corner tiles?
 
+--- Part Two ---
+
+Now, you're ready to check the image for sea monsters.
+
+The borders of each tile are not part of the actual image; start by removing them.
+
+In the example above, the tiles become:
+
+.#.#..#. ##...#.# #..#####
+###....# .#....#. .#......
+##.##.## #.#.#..# #####...
+###.#### #...#.## ###.#..#
+##.#.... #.##.### #...#.##
+...##### ###.#... .#####.#
+....#..# ...##..# .#.###..
+.####... #..#.... .#......
+
+#..#.##. .#..###. #.##....
+#.####.. #.####.# .#.###..
+###.#.#. ..#.#### ##.#..##
+#.####.. ..##..## ######.#
+##..##.# ...#...# .#.#.#..
+...#..#. .#.#.##. .###.###
+.#.#.... #.##.#.. .###.##.
+###.#... #..#.##. ######..
+
+.#.#.### .##.##.# ..#.##..
+.####.## #.#...## #.#..#.#
+..#.#..# ..#.#.#. ####.###
+#..####. ..#.#.#. ###.###.
+#####..# ####...# ##....##
+#.##..#. .#...#.. ####...#
+.#.###.. ##..##.. ####.##.
+...###.. .##...#. ..#..###
+
+Remove the gaps to form the actual image:
+
+.#.#..#.##...#.##..#####
+###....#.#....#..#......
+##.##.###.#.#..######...
+###.#####...#.#####.#..#
+##.#....#.##.####...#.##
+...########.#....#####.#
+....#..#...##..#.#.###..
+.####...#..#.....#......
+#..#.##..#..###.#.##....
+#.####..#.####.#.#.###..
+###.#.#...#.######.#..##
+#.####....##..########.#
+##..##.#...#...#.#.#.#..
+...#..#..#.#.##..###.###
+.#.#....#.##.#...###.##.
+###.#...#..#.##.######..
+.#.#.###.##.##.#..#.##..
+.####.###.#...###.#..#.#
+..#.#..#..#.#.#.####.###
+#..####...#.#.#.###.###.
+#####..#####...###....##
+#.##..#..#...#..####...#
+.#.###..##..##..####.##.
+...###...##...#...#..###
+
+Now, you're ready to search for sea monsters! Because your image is monochrome, a sea monster will look like this:
+
+                  #
+#    ##    ##    ###
+ #  #  #  #  #  #
+
+When looking for this pattern in the image, the spaces can be anything; only the # need to match.
+Also, you might need to rotate or flip your image before it's oriented correctly to find sea monsters.
+In the above image, after flipping and rotating it to the appropriate orientation,
+there are two sea monsters (marked with O):
+
+.####...#####..#...###..
+#####..#..#.#.####..#.#.
+.#.#...#.###...#.##.O#..
+#.O.##.OO#.#.OO.##.OOO##
+..#O.#O#.O##O..O.#O##.##
+...#.#..##.##...#..#..##
+#.##.#..#.#..#..##.#.#..
+.###.##.....#...###.#...
+#.####.#.#....##.#..#.#.
+##...#..#....#..#...####
+..#.##...###..#.#####..#
+....#.##.#.#####....#...
+..##.##.###.....#.##..#.
+#...#...###..####....##.
+.#.##...#.##.#.#.###...#
+#.###.#..####...##..#...
+#.###...#.##...#.##O###.
+.O##.#OO.###OO##..OOO##.
+..O#.O..O..O.#O##O##.###
+#.#..##.########..#..##.
+#.#####..#.#...##..#....
+#....##..#.#########..##
+#...#.....#..##...###.##
+#..###....##.#...##.##.#
+
+Determine how rough the waters are in the sea monsters' habitat by counting the number of #
+that are not part of a sea monster.
+In the above example, the habitat's water roughness is 273.
+
+How many # are not part of a sea monster?
  */
 
 fun findSolutionTiles(tiles: List<Tile>): List<List<Tile>> {
     val expectedSizeOfSolution = sqrt(tiles.size.toFloat()).toInt()
     val tileConnections = tiles.findConnections()
-    val cornerCandidates = tileConnections.filter { it.isTopLeftCorner() } // Corners dont need to be turned because the whole solution would just be turned
+    val cornerCandidates = tileConnections.filter { it.isTopLeftCorner() } // Corners don't need to be turned because the whole solution would just be turned
     println("cornerCandidates.size=${cornerCandidates.size}")
     for (cornerCandidate in cornerCandidates) {
         println("cornerCandidate=$cornerCandidate")
@@ -218,7 +321,7 @@ fun List<List<Tile>>.calculateCornerProduct(): Long {
 
 fun List<Tile>.completeSouthernNeighbors(startRow: List<Tile>): List<List<Tile>> {
     // This does not check if the tiles match from east to west which they should according to the description
-    // Interestingly the solution is nevertheless found, matchin from north to south seems to be unique
+    // Interestingly the solution is nevertheless found, matching from north to south seems to be unique
     var remainingTiles = this
     return sequence {
         yield(startRow)
@@ -259,7 +362,7 @@ fun List<Tile>.completeEasternNeighbor(start: Tile): List<Tile> {
         var currentTile = start
         while(remainingTiles.isNotEmpty()) {
             val nextCandidates = remainingTiles.searchEasternNeighborCandidates(currentTile)
-            println("eastern neigbors for ${currentTile.id}=${nextCandidates.map { it.id }}")
+            println("eastern neighbors for ${currentTile.id}=${nextCandidates.map { it.id }}")
             val next = nextCandidates.firstOrNull() ?: break
             yield(next)
             currentTile = next
@@ -371,7 +474,6 @@ val allVariations = listOf(Original, FlipX, FlipY).flatMap { flip ->
     }
 }
 
-
 sealed class TileFlip
 object Original : TileFlip()
 object FlipX : TileFlip()
@@ -382,126 +484,78 @@ data class TileVariation(val flip: TileFlip, val turnRight: TurnRight)
 fun TileArray.flipX() = reversed()
 fun TileArray.flipY() = map { it.reversed() }
 
-fun parseTile(tileString: String): List<List<Char>> =
-    tileString.split("\n").filter { it.isNotBlank() }.map { it.trim().toList() }
+fun parseTileArray(tileString: String): TileArray =
+    tileString.split("\n").filter { it.isNotBlank() }.map { it.toList() }
 
 
-class Day20_Part1 : FunSpec({
-    context("tile operations") {
-        context("flip x") {
-            val tile = parseTile("""
-            .#
-            ..
-            """.trimIndent())
-            tile.flipX() shouldBe  parseTile("""
-            ..
-            .#
-            """.trimIndent())
+fun TileArray.countNonMonsters(): Int = map { row ->
+    row.count { it == '#'}
+}.sum()
+
+fun TileArray.findMonstersInAnyVariation(monster: TileArray): TileArray = allVariations.map {
+    this.variation(it)
+}.map { tileArrayVariation ->
+    tileArrayVariation.findMonsters(monster)
+}.first { tileArrayWithMarkedMonsters ->
+    tileArrayWithMarkedMonsters.any { row ->
+        row.any { it == 'O'}
+    }
+}
+
+fun TileArray.findMonsters(monster: TileArray): TileArray {
+    fun findMonsterAt(x: Int, y: Int, monster: TileArray): Boolean {
+        for (monsterY in monster.indices)
+            for (monsterX in monster.first().indices) {
+                val monsterC = monster[monsterY][monsterX]
+                if (monsterC == '#' && this.getOrNull(y + monsterY)?.getOrNull(x + monsterX) != '#')
+                    return false // found mismatch
+            }
+        return true
+    }
+    fun markMonsterAt(mutableTile: MutableList<MutableList<Char>>, x: Int, y: Int, monster: TileArray) {
+        for (monsterY in monster.indices)
+            for (monsterX in monster.first().indices) {
+                val monsterC = monster[monsterY][monsterX]
+                if (monsterC == '#') {
+                    val setX = x + monsterX
+                    val setY = y + monsterY
+                    if (setY in mutableTile.indices && setX in mutableTile.first().indices)
+                        mutableTile[setY][setX] = 'O'
+                }
+            }
+    }
+    val mutableTile = this.map { row ->
+        row.toMutableList()
+    }.toMutableList()
+    for (y in mutableTile.indices)
+        for (x in mutableTile.first().indices) {
+            val monsterFound = findMonsterAt(x, y, monster)
+            if (monsterFound) markMonsterAt(mutableTile, x, y, monster)
         }
-        context("flip y") {
-            val tile = parseTile("""
-            .#
-            ..
-            """.trimIndent())
-            tile.flipY() shouldBe  parseTile("""
-            #.
-            ..
-            """.trimIndent())
-        }
-        context("turn right") {
-            val tile = parseTile("""
-            ##
-            ..
-            """.trimIndent())
-            tile.turnRight() shouldBe  parseTile("""
-            .#
-            .#
-            """.trimIndent())
-        }
-        context("all variations") {
-            val tileArray = parseTile("""
-            .##
-            ...
-            ...
-            """.trimIndent())
-            val allVariants = Tile(1, tileArray).inAllVariations()
-            allVariants shouldBe setOf(
-                TileVariation(Original, TurnRight(0)) to
-                parseTile("""
-                .##
-                ...
-                ...
-                """.trimIndent()),
-                TileVariation(Original, TurnRight(1)) to
-                parseTile("""
-                ...
-                ..#
-                ..#
-                """.trimIndent()),
-                TileVariation(Original, TurnRight(2)) to
-                parseTile("""
-                ...
-                ...
-                ##.
-                """.trimIndent()),
-                TileVariation(Original,  TurnRight(3)) to
-                parseTile("""
-                #..
-                #..
-                ...
-                """.trimIndent()),
-                TileVariation(FlipX,  TurnRight(0)) to
-                parseTile("""
-                ...
-                ...
-                .##
-                """.trimIndent()),
-                TileVariation(FlipX,  TurnRight(1)) to
-                parseTile("""
-                ...
-                #..
-                #..
-                """.trimIndent()),
-                TileVariation(FlipX,  TurnRight(2)) to
-                parseTile("""
-                ##.
-                ...
-                ...
-                """.trimIndent()),
-                TileVariation(FlipX,  TurnRight(3)) to
-                parseTile("""
-                ..#
-                ..#
-                ...
-                """.trimIndent()),
-                TileVariation(FlipY,  TurnRight(0)) to
-                parseTile("""
-                ##.
-                ...
-                ...
-                """.trimIndent()),
-                TileVariation(FlipY,  TurnRight(1)) to
-                parseTile("""
-                ..#
-                ..#
-                ...
-                """.trimIndent()),
-                TileVariation(FlipY,  TurnRight(2)) to
-                parseTile("""
-                ...
-                ...
-                .##
-                """.trimIndent()),
-                TileVariation(FlipY,  TurnRight(3)) to
-                parseTile("""
-                ...
-                #..
-                #..
-                """.trimIndent()),
-             )
+    return mutableTile
+}
+
+fun combineTiles(tiles: List<List<Tile>>): TileArray =
+    tiles.flatMap { rowOfTile ->
+        val firstTile = rowOfTile.first()
+        firstTile.array.indices.map { y ->
+            val charRow = rowOfTile.indices.map { tileIndex -> rowOfTile[tileIndex].array[y] }
+            val combinedLine = charRow.reduce { acc, tile ->  acc + tile }
+            combinedLine
         }
     }
-    val tilesString = """
+
+fun List<List<Tile>>.removeGaps() =
+    map { rowOfTiles ->
+        rowOfTiles.map { tile ->
+            val droppedArray = tile.array.drop(1).dropLast(1).map { row ->
+                row.drop(1).dropLast(1)
+            }
+            Tile(tile.id, droppedArray)
+        }
+    }
+
+val exampleTilesString = """
         Tile 2311:
         ..##.#..#.
         ##..#.....
@@ -610,13 +664,129 @@ class Day20_Part1 : FunSpec({
         ..#.......
         ..#.###...
         """.trimIndent()
-    val tiles = parseTiles(tilesString)
+val exampleTiles = parseTiles(exampleTilesString)
+
+class Day20_Part1 : FunSpec({
+    context("tile operations") {
+        context("flip x") {
+            val tile = parseTileArray("""
+            .#
+            ..
+            """.trimIndent())
+            tile.flipX() shouldBe  parseTileArray("""
+            ..
+            .#
+            """.trimIndent())
+        }
+        context("flip y") {
+            val tile = parseTileArray("""
+            .#
+            ..
+            """.trimIndent())
+            tile.flipY() shouldBe  parseTileArray("""
+            #.
+            ..
+            """.trimIndent())
+        }
+        context("turn right") {
+            val tile = parseTileArray("""
+            ##
+            ..
+            """.trimIndent())
+            tile.turnRight() shouldBe  parseTileArray("""
+            .#
+            .#
+            """.trimIndent())
+        }
+        context("all variations") {
+            val tileArray = parseTileArray("""
+            .##
+            ...
+            ...
+            """.trimIndent())
+            val allVariants = Tile(1, tileArray).inAllVariations()
+            allVariants shouldBe setOf(
+                TileVariation(Original, TurnRight(0)) to
+                parseTileArray("""
+                .##
+                ...
+                ...
+                """.trimIndent()),
+                TileVariation(Original, TurnRight(1)) to
+                parseTileArray("""
+                ...
+                ..#
+                ..#
+                """.trimIndent()),
+                TileVariation(Original, TurnRight(2)) to
+                parseTileArray("""
+                ...
+                ...
+                ##.
+                """.trimIndent()),
+                TileVariation(Original,  TurnRight(3)) to
+                parseTileArray("""
+                #..
+                #..
+                ...
+                """.trimIndent()),
+                TileVariation(FlipX,  TurnRight(0)) to
+                parseTileArray("""
+                ...
+                ...
+                .##
+                """.trimIndent()),
+                TileVariation(FlipX,  TurnRight(1)) to
+                parseTileArray("""
+                ...
+                #..
+                #..
+                """.trimIndent()),
+                TileVariation(FlipX,  TurnRight(2)) to
+                parseTileArray("""
+                ##.
+                ...
+                ...
+                """.trimIndent()),
+                TileVariation(FlipX,  TurnRight(3)) to
+                parseTileArray("""
+                ..#
+                ..#
+                ...
+                """.trimIndent()),
+                TileVariation(FlipY,  TurnRight(0)) to
+                parseTileArray("""
+                ##.
+                ...
+                ...
+                """.trimIndent()),
+                TileVariation(FlipY,  TurnRight(1)) to
+                parseTileArray("""
+                ..#
+                ..#
+                ...
+                """.trimIndent()),
+                TileVariation(FlipY,  TurnRight(2)) to
+                parseTileArray("""
+                ...
+                ...
+                .##
+                """.trimIndent()),
+                TileVariation(FlipY,  TurnRight(3)) to
+                parseTileArray("""
+                ...
+                #..
+                #..
+                """.trimIndent()),
+             )
+        }
+    }
 
     context("parse tiles") {
         test("should have parsed tiles") {
-            tiles.size shouldBe 9
-            tiles[7].id shouldBe 2729
-            tiles[8].array.toPrintableString() shouldBe """
+            exampleTiles.size shouldBe 9
+            exampleTiles[7].id shouldBe 2729
+            exampleTiles[8].array.toPrintableString() shouldBe """
             #.#.#####.
             .#..######
             ..#.......
@@ -631,7 +801,7 @@ class Day20_Part1 : FunSpec({
         }
     }
     context("find borders") {
-        val tile = tiles[8]
+        val tile = exampleTiles[8]
         val northBorder = tile.array.northBorder()
         test("north border") {
             northBorder.joinToString("") shouldBe "#.#.#####."
@@ -650,35 +820,35 @@ class Day20_Part1 : FunSpec({
         }
     }
     context("connect tiles") {
-        val tileConnections = tiles.findConnections()
+        val tileConnections = exampleTiles.findConnections()
         val corner = tileConnections.first { it.isTopLeftCorner() }
         test("should have found corner") {
             corner.tile.id shouldBe 2971
         }
         context("eastern neighbors") {
-            val easternNeighbor = (tiles - corner.tile).searchEasternNeighbor(corner.tile)
+            val easternNeighbor = (exampleTiles - corner.tile).searchEasternNeighbor(corner.tile)
             test("should find eastern neighbor of corner") {
                 easternNeighbor?.id shouldBe 1489
             }
-            val completedRow = tiles.completeEasternNeighbor(corner.tile)
+            val completedRow = exampleTiles.completeEasternNeighbor(corner.tile)
             test("should find all eastern neighbor of corner") {
                 completedRow.map { it.id } shouldBe listOf(2971, 1489, 1171)
             }
         }
         context("southern neighbor") {
-            val southernNeighbor = tiles.searchSouthernNeighbor(corner.tile)
+            val southernNeighbor = exampleTiles.searchSouthernNeighbor(corner.tile)
             test("should find southern neighbor of corner") {
                 southernNeighbor?.id shouldBe 2729
             }
         }
         context("southern neighbors") {
-            val southernNeighbors = tiles.searchSouthernNeighbors(tiles.completeEasternNeighbor(corner.tile))
+            val southernNeighbors = exampleTiles.searchSouthernNeighbors(exampleTiles.completeEasternNeighbor(corner.tile))
             test("should find southern neighbors of start line") {
                 southernNeighbors.map { it.id } shouldBe listOf(2729, 1427, 2473)
             }
         }
         context("complete southern neighbors") {
-            val solutionTiles = tiles.completeSouthernNeighbors(tiles.completeEasternNeighbor(corner.tile))
+            val solutionTiles = exampleTiles.completeSouthernNeighbors(exampleTiles.completeEasternNeighbor(corner.tile))
             test("should find all southern neighbors of start line") {
                 solutionTiles.map { row ->
                     row.map { it.id }
@@ -690,7 +860,7 @@ class Day20_Part1 : FunSpec({
             }
         }
         context("all steps to find the solution") {
-            val solutionTiles = findSolutionTiles(tiles)
+            val solutionTiles = findSolutionTiles(exampleTiles)
             test("should find all southern neighbors of start line") {
                 solutionTiles.map { row ->
                     row.map { it.id }
@@ -719,5 +889,113 @@ class Day20_Part1_Exercise: FunSpec({
     val solution = solutionTiles.calculateCornerProduct()
     test("should have found solution") {
         solution shouldBe 23386616781851L
+    }
+})
+
+val monster = parseTileArray("""
+                                      # 
+                    #    ##    ##    ###
+                     #  #  #  #  #  #   
+                    """.trimIndent())
+
+class Day20_Part2: FunSpec({
+    context("search sea monsters") {
+        context("remove gaps") {
+            val solutionTiles = findSolutionTiles(exampleTiles)
+            val tilesWithoutGaps = solutionTiles.removeGaps()
+            test("gaps should be removed") {
+                tilesWithoutGaps[0][0].array.toPrintableString() shouldBe """
+                ...###..
+                .#.###..
+                #.##..#.
+                #####..#
+                #..####.
+                ..#.#..#
+                .####.##
+                .#.#.###
+                """.trimIndent()
+            }
+            context("combine tiles") {
+                val image = combineTiles(tilesWithoutGaps)
+                test("should combined image") { // Flip needed because example has image flipped compared to my solution
+                    image.flipX().toPrintableString() shouldBe """
+                    .#.#..#.##...#.##..#####
+                    ###....#.#....#..#......
+                    ##.##.###.#.#..######...
+                    ###.#####...#.#####.#..#
+                    ##.#....#.##.####...#.##
+                    ...########.#....#####.#
+                    ....#..#...##..#.#.###..
+                    .####...#..#.....#......
+                    #..#.##..#..###.#.##....
+                    #.####..#.####.#.#.###..
+                    ###.#.#...#.######.#..##
+                    #.####....##..########.#
+                    ##..##.#...#...#.#.#.#..
+                    ...#..#..#.#.##..###.###
+                    .#.#....#.##.#...###.##.
+                    ###.#...#..#.##.######..
+                    .#.#.###.##.##.#..#.##..
+                    .####.###.#...###.#..#.#
+                    ..#.#..#..#.#.#.####.###
+                    #..####...#.#.#.###.###.
+                    #####..#####...###....##
+                    #.##..#..#...#..####...#
+                    .#.###..##..##..####.##.
+                    ...###...##...#...#..###
+                    """.trimIndent()
+                }
+                context("find monster") {
+                    val withMarkedMonsters = image.findMonstersInAnyVariation(monster)
+                    test("monsters should be marked") {
+                        withMarkedMonsters.toPrintableString() shouldBe """
+                        .####...#####..#...###..
+                        #####..#..#.#.####..#.#.
+                        .#.#...#.###...#.##.O#..
+                        #.O.##.OO#.#.OO.##.OOO##
+                        ..#O.#O#.O##O..O.#O##.##
+                        ...#.#..##.##...#..#..##
+                        #.##.#..#.#..#..##.#.#..
+                        .###.##.....#...###.#...
+                        #.####.#.#....##.#..#.#.
+                        ##...#..#....#..#...####
+                        ..#.##...###..#.#####..#
+                        ....#.##.#.#####....#...
+                        ..##.##.###.....#.##..#.
+                        #...#...###..####....##.
+                        .#.##...#.##.#.#.###...#
+                        #.###.#..####...##..#...
+                        #.###...#.##...#.##O###.
+                        .O##.#OO.###OO##..OOO##.
+                        ..O#.O..O..O.#O##O##.###
+                        #.#..##.########..#..##.
+                        #.#####..#.#...##..#....
+                        #....##..#.#########..##
+                        #...#.....#..##...###.##
+                        #..###....##.#...##.##.#
+                        """.trimIndent()
+                    }
+                    test("should count non monsters") {
+                        val solution = withMarkedMonsters.countNonMonsters()
+                        solution shouldBe 273
+                    }
+                }
+            }
+        }
+    }
+})
+
+class Day20_Part2_Exercise: FunSpec({
+    val input = readResource("day20Input.txt")!!
+    val tiles = parseTiles(input)
+    val solutionTiles = findSolutionTiles(tiles)
+    val tilesWithoutGaps = solutionTiles.removeGaps()
+    val image = combineTiles(tilesWithoutGaps)
+    println(image.toPrintableString())
+    val withMarkedMonsters = image.findMonstersInAnyVariation(monster)
+    println(withMarkedMonsters.toPrintableString())
+    val solution = withMarkedMonsters.countNonMonsters()
+    test("should have found the correct number on non monsters") {
+        solution shouldBe 2376
     }
 })
