@@ -217,6 +217,8 @@ fun List<List<Tile>>.calculateCornerProduct(): Long {
 
 
 fun List<Tile>.completeSouthernNeighbors(startRow: List<Tile>): List<List<Tile>> {
+    // This does not check if the tiles match from east to west which they should according to the description
+    // Interestingly the solution is nevertheless found, matchin from north to south seems to be unique
     var remainingTiles = this
     return sequence {
         yield(startRow)
