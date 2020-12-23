@@ -92,11 +92,39 @@ If the crab were to complete all 100 moves, the order after cup 1 would be 67384
 Using your labeling, simulate 100 moves. What are the labels on the cups after cup 1?
 
 Your puzzle input is 326519478.
+
+--- Part Two ---
+
+Due to what you can only assume is a mistranslation (you're not exactly fluent in Crab),
+you are quite surprised when the crab starts arranging many cups in a circle on your raft
+- one million (1000000) in total.
+
+Your labeling is still correct for the first few cups;
+after that, the remaining cups are just numbered in an increasing fashion
+starting from the number after the highest number in your list and proceeding one by one until one million is reached.
+(For example, if your labeling were 54321, the cups would be numbered 5, 4, 3, 2, 1,
+and then start counting up from 6 until one million is reached.)
+In this way, every number from one through one million is used exactly once.
+
+After discovering where you made the mistake in translating Crab Numbers,
+you realize the small crab isn't going to do merely 100 moves;
+the crab is going to do ten million (10000000) moves!
+
+The crab is going to hide your stars - one each - under the two cups that will end up immediately clockwise of cup 1.
+You can have them if you predict what the labels on those cups will be when the crab is finished.
+
+In the above example (389125467), this would be 934001 and then 159792;
+multiplying these together produces 149245887792.
+
+Determine which two cups will end up immediately clockwise of cup 1. What do you get if you multiply their labels together?
+
  */
 
-fun parseCrabCircle(crabCircleString: String): CrabCircle = CrabCircle(
+fun parseCrabCircle(crabCircleString: String): CrabCircle = CrabCircle(parseCrabCircleList(crabCircleString))
+
+fun parseCrabCircleList(crabCircleString: String): List<Int> =
     crabCircleString.toList().map { it.toString().toInt() }
-)
+
 
 class CrabCircle(
     val cups: MutableList<Int>,
@@ -121,8 +149,10 @@ class CrabCircle(
             }
         }.joinToString("")
     }
+    var round = 0
 
     fun move() {
+        round++
         val currentPos = cups.indexOf(currentCup)
         val picked3 = pick3(nextPos(currentPos))
         val destinationCup = findDestinationCup(currentCup, picked3)
@@ -131,6 +161,7 @@ class CrabCircle(
         val currentPosAfterInsert = cups.indexOf(currentCup)
         val nextPos = nextPos(currentPosAfterInsert)
         currentCup = cups[nextPos]
+        if (round % 100 == 0) println(round)
     }
 
     fun findDestinationCup(cup: Int, picked3: List<Int>): Int {
@@ -227,3 +258,23 @@ class Day23_Part1_Exercise: FunSpec({
         solution shouldBe 25368479
     }
 })
+
+class Day23_Part2: FunSpec({
+    context("create a crab circle with 1000,000 cups") {
+        val crabCircle = parseCrabCircleAndFill("326519478", 1000_000)
+        test("should have filed to 1000_000") {
+            crabCircle.cups.size shouldBe 1000_000
+            crabCircle.cups.maxOrNull() shouldBe 1000_000
+        }
+        context("play some rounds") {
+            repeat(100_000) { crabCircle.move() }
+        }
+    }
+})
+
+fun parseCrabCircleAndFill(crabCircleString: String, nr: Int): CrabCircle {
+    val cupList = parseCrabCircleList(crabCircleString)
+    val max = cupList.maxOrNull()!!
+    val filledList = cupList + (max+1..nr).toList()
+    return CrabCircle(filledList)
+}
