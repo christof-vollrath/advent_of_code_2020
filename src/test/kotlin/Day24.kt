@@ -178,6 +178,49 @@ fun Coord2.moveHexagonal(hexagonalMove: HexagonalMove): Coord2 =
         HexagonalMove.NORTHWEST -> Coord2(if (y % 2 == 0) x else x - 1, y - 1)
     }
 
+fun TiledFloor.applyDailyRules(): TiledFloor {
+    val result = TiledFloor()
+    forEach { blackTileCoord2 ->
+        val neighbors = blackTileCoord2.hexagonalNeighbors()
+        val neighborSize = neighbors.filter { it in this }.size
+        if (neighborSize in 1..2 ) result.add(blackTileCoord2)
+    }
+    val whiteTiles = flatMap { blackTileCoord2 ->
+        blackTileCoord2.hexagonalNeighbors().filter { hexagonalNeighbor -> hexagonalNeighbor !in this}
+    }
+    whiteTiles.forEach { whitTileCoord2 ->
+        val neighbors = whitTileCoord2.hexagonalNeighbors()
+        val neighborSize = neighbors.filter { it in this }.size
+        if (neighborSize == 2 ) result.add(whitTileCoord2)
+    }
+    return result
+}
+
+fun Coord2.hexagonalNeighbors(): List<Coord2> =
+    HexagonalMove.values().map { this.moveHexagonal(it) }
+
+val exampleflipsString = """
+        sesenwnenenewseeswwswswwnenewsewsw
+        neeenesenwnwwswnenewnwwsewnenwseswesw
+        seswneswswsenwwnwse
+        nwnwneseeswswnenewneswwnewseswneseene
+        swweswneswnenwsewnwneneseenw
+        eesenwseswswnenwswnwnwsewwnwsene
+        sewnenenenesenwsewnenwwwse
+        wenwwweseeeweswwwnwwe
+        wsweesenenewnwwnwsenewsenwwsesesenwne
+        neeswseenwwswnwswswnw
+        nenwswwsewswnenenewsenwsenwnesesenew
+        enewnwewneswsewnwswenweswnenwsenwsw
+        sweneswneswneneenwnewenewwneswswnese
+        swwesenesewenwneswnwwneseswwne
+        enesenwswwswneneswsenwnewswseenwsese
+        wnwnesenesenenwwnenwsewesewsesesew
+        nenewswnwewswnenesenwnesewesw
+        eneswnwswnwsenenwnwnwwseeswneewsenese
+        neswnwewnwnwseenwseesewsenwsweewe
+        wseweeenwnesenwwwswnew            
+        """.trimIndent()
 
 class Day24_Part1 : FunSpec({
 
@@ -250,29 +293,7 @@ class Day24_Part1 : FunSpec({
         }
     }
     context("example") {
-        val flipsString = """
-        sesenwnenenewseeswwswswwnenewsewsw
-        neeenesenwnwwswnenewnwwsewnenwseswesw
-        seswneswswsenwwnwse
-        nwnwneseeswswnenewneswwnewseswneseene
-        swweswneswnenwsewnwneneseenw
-        eesenwseswswnenwswnwnwsewwnwsene
-        sewnenenenesenwsewnenwwwse
-        wenwwweseeeweswwwnwwe
-        wsweesenenewnwwnwsenewsenwwsesesenwne
-        neeswseenwwswnwswswnw
-        nenwswwsewswnenenewsenwsenwnesesenew
-        enewnwewneswsewnwswenweswnenwsenwsw
-        sweneswneswneneenwnewenewwneswswnese
-        swwesenesewenwneswnwwneseswwne
-        enesenwswwswneneswsenwnewswseenwsese
-        wnwnesenesenenwwnenwsewesewsesesew
-        nenewswnwewswnenesenwnesewesw
-        eneswnwswnwsenenwnwnwwseeswneewsenese
-        neswnwewnwnwseenwseesewsenwsweewe
-        wseweeenwnesenwwwswnew            
-        """.trimIndent()
-        val tiledFloor = executeFlips(flipsString)
+        val tiledFloor = executeFlips(exampleflipsString)
         tiledFloor.size shouldBe 10
     }
 })
@@ -284,4 +305,39 @@ class Day24_Part1_Exercise: FunSpec({
     test("should have found the right number of black tiles") {
         solution shouldBe 351
     }
+})
+
+class Day24_Part2 : FunSpec({
+
+    context("apply hexagonal rules") {
+        var tiledFloor = executeFlips(exampleflipsString)
+
+        test("day 1") {
+            tiledFloor = tiledFloor.applyDailyRules()
+            tiledFloor.size shouldBe 15
+        }
+        test("day 2") {
+            tiledFloor = tiledFloor.applyDailyRules()
+            tiledFloor.size shouldBe 12
+        }
+        test("day 3") {
+            tiledFloor = tiledFloor.applyDailyRules()
+            tiledFloor.size shouldBe 25
+        }
+        test("day 100") {
+            repeat(97) { tiledFloor = tiledFloor.applyDailyRules() }
+            tiledFloor.size shouldBe 2208
+        }
+    }
+})
+
+class Day24_Part2_Exercise: FunSpec({
+    val input = readResource("day24Input.txt")!!
+    var tiledFloor = executeFlips(input)
+    repeat(100) { tiledFloor = tiledFloor.applyDailyRules() }
+    val solution = tiledFloor.size
+    test("should have flipped the right number of black tiles") {
+        solution shouldBe 3869
+    }
+
 })
