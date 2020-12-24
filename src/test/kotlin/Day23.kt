@@ -260,14 +260,52 @@ class Day23_Part1_Exercise: FunSpec({
 })
 
 class Day23_Part2: FunSpec({
-    context("create a crab circle with 1000,000 cups") {
+    xcontext("create a crab circle with 100 cups") {
+        val crabCircle = parseCrabCircleAndFill("326519478", 100)
+        /*
+        test("should have filed to 1000_000") {
+            crabCircle.cups.size shouldBe 1000_000
+            crabCircle.cups.maxOrNull() shouldBe 1000_000
+        }
+        */
+        context("play some rounds") {
+            var pos1BeforeMove: Int? = null
+            var following1BeforeMove: Pair<Int, Int>? = null
+            for (i in 1..100_000) {
+                pos1BeforeMove = crabCircle.cups.indexOf(1)
+                following1BeforeMove = crabCircle.cups[pos1BeforeMove!! + 1] to crabCircle.cups[pos1BeforeMove!! + 2]
+                crabCircle.move()
+                println(crabCircle.cups)
+                var pos1 = crabCircle.cups.indexOf(1)
+                /*
+                if (pos1 == pos1BeforeMove && crabCircle.cups[pos1 + 1] to crabCircle.cups[pos1 + 2] == following1BeforeMove) {
+                    println("no significant changes after move $i $pos1BeforeMove $following1BeforeMove")
+                    //break
+                }
+                */
+                if (crabCircle.cups[pos1 + 1] to crabCircle.cups[pos1 + 2] != following1BeforeMove) {
+                    println("significant changes after move $i $pos1BeforeMove $following1BeforeMove")
+                    //break
+                }
+            }
+        }
+    }
+
+    xcontext("create a crab circle with 1000,000 cups") {
         val crabCircle = parseCrabCircleAndFill("326519478", 1000_000)
         test("should have filed to 1000_000") {
             crabCircle.cups.size shouldBe 1000_000
             crabCircle.cups.maxOrNull() shouldBe 1000_000
         }
         context("play some rounds") {
-            repeat(100_000) { crabCircle.move() }
+            for (i in 1..10_000_000) {
+                var beforeMove = crabCircle.cups.toList()
+                crabCircle.move()
+                if (crabCircle.cups.toList() == beforeMove) {
+                    println("no changes after $i moves")
+                    break
+                }
+            }
         }
     }
 })
