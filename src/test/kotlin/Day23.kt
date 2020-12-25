@@ -1,5 +1,7 @@
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.longs.shouldBeLessThan
 import io.kotest.matchers.shouldBe
+import io.kotest.mpp.timeInMillis
 
 /*
 --- Day 23: Crab Cups ---
@@ -138,6 +140,24 @@ class CrabCircle(
         highestCup = initialCups.maxOrNull()!!,
         currentCup = initialCups[0]
     )
+    val cupMap = mutableMapOf<Int, Int>()
+
+    init {
+        updateCupMap(0 until cups.size)
+    }
+
+    fun updateCupMap(modifiedRange: IntRange) {
+        /*
+        cups.forEachIndexed { index, cup ->
+            cupMap[cup] = index
+        }
+
+         */
+        modifiedRange.forEach { i ->
+            val cup = cups[i]
+            cupMap[cup] = i
+        }
+    }
 
     fun nextPos(pos: Int) = if (pos < cups.size-1) pos + 1 else 0
     fun toPrintableString(): String {
@@ -153,12 +173,13 @@ class CrabCircle(
 
     fun move() {
         round++
-        val currentPos = cups.indexOf(currentCup)
-        val picked3 = pick3(nextPos(currentPos))
-        val destinationCup = findDestinationCup(currentCup, picked3)
-        val destinationPos = cups.indexOf(destinationCup)
-        insert(destinationPos, picked3)
-        val currentPosAfterInsert = cups.indexOf(currentCup)
+        val currentPos = cupMap[currentCup]!!
+        //val currentPos = cups.indexOf(currentCup)
+        val (toPick3Pos, toPick3) = toPick3(nextPos(currentPos))
+        val destinationCup = findDestinationCup(currentCup, toPick3)
+        removeAndInsert(toPick3, toPick3Pos, destinationCup)
+        //val currentPosAfterInsert = cups.indexOf(currentCup)
+        val currentPosAfterInsert = cupMap[currentCup]!!
         val nextPos = nextPos(currentPosAfterInsert)
         currentCup = cups[nextPos]
         if (round % 100 == 0) println(round)
@@ -173,21 +194,52 @@ class CrabCircle(
         return nextTry
     }
 
-    fun insert(pos: Int, picked: List<Int>) {
-        val insertPos = nextPos(pos) // should insert right to the pos
-        for(element in picked.reversed()) cups.add(insertPos, element)
+    fun removeAndInsert(toPick3: List<Int>, toPick3Pos: List<Int>, destinationCup: Int) {
+        val fullCupsSize = cups.size
+        val destinationPos = cupMap[destinationCup]!!
+        cups.removeAt(toPick3Pos)
+        val cupsRemovedBeforeDestinationPos = toPick3Pos.filter { it < destinationPos }.count()
+        val insertPos = nextPos(destinationPos-cupsRemovedBeforeDestinationPos) // should insert right to the pos
+        val modifiedRange = if (toPick3Pos[0] > toPick3Pos[2]) { // Removing things at the end makes it to complicted
+            0 until fullCupsSize
+        } else {
+            if (destinationPos + 3 > fullCupsSize) { // Also inserting at the end makes to complicated
+                0 until fullCupsSize
+            } else
+                if (destinationPos < toPick3Pos.minOrNull()!!) destinationPos..toPick3Pos.maxOrNull()!!
+                else toPick3Pos.minOrNull()!!..(destinationPos+2)
+        }
+        //println("Modified range $modifiedRange")
+        for(element in toPick3.reversed()) cups.add(insertPos, element)
+        updateCupMap(modifiedRange)
     }
 
-    fun pick3(startPos: Int): List<Int> {
+    fun toPick3(startPos: Int): Pair<List<Int>, List<Int>> {
         var pos = startPos
-        val result = sequence {
+        val posAndValueList = sequence {
             repeat(3) {
-                yield(cups[pos])
+                yield(pos to cups[pos])
                 pos = nextPos(pos)
             }
         }.toList()
-        cups.removeAll(result)
-        return result
+        return posAndValueList.map { it.first } to posAndValueList.map { it.second }
+    }
+}
+
+fun MutableList<Int>.removeAt(indexes: List<Int>) {
+    var recentRemoveAt: Int? = null
+    var offset: Int = 0
+    indexes.forEachIndexed { index, pos ->
+        val removeAt: Int
+        if (recentRemoveAt != null && pos > recentRemoveAt!!) {
+            removeAt = pos - offset
+            offset++
+        } else {
+            removeAt = pos
+            offset = 1
+        }
+        removeAt(removeAt)
+        recentRemoveAt = removeAt
     }
 }
 
@@ -260,6 +312,15 @@ class Day23_Part1_Exercise: FunSpec({
 })
 
 class Day23_Part2: FunSpec({
+    context("measure performance") {
+        val crabCircle = parseCrabCircleAndFill("326519478", 1000_000)
+        val start = timeInMillis()
+        repeat(1000) { crabCircle.move() }
+        val took = timeInMillis() - start
+        println("took=$took ms")
+        took shouldBeLessThan 1000 // Otherwise it takes too long
+
+    }
     xcontext("create a crab circle with 100 cups") {
         val crabCircle = parseCrabCircleAndFill("326519478", 100)
         /*
