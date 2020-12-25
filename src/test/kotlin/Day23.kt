@@ -2,6 +2,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.longs.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import io.kotest.mpp.timeInMillis
+import org.magicwerk.brownies.collections.GapList
 
 /*
 --- Day 23: Crab Cups ---
@@ -129,13 +130,13 @@ fun parseCrabCircleList(crabCircleString: String): List<Int> =
 
 
 class CrabCircle(
-    val cups: MutableList<Int>,
+    val cups: GapList<Int>,
     val lowestCup: Int,
     val highestCup: Int,
     var currentCup: Int
 ) {
     constructor(initialCups: List<Int>): this(
-        cups = initialCups.toMutableList(),
+        cups = GapList(initialCups),
         lowestCup = initialCups.minOrNull()!!,
         highestCup = initialCups.maxOrNull()!!,
         currentCup = initialCups[0]
@@ -315,10 +316,10 @@ class Day23_Part2: FunSpec({
     context("measure performance") {
         val crabCircle = parseCrabCircleAndFill("326519478", 1000_000)
         val start = timeInMillis()
-        repeat(1000) { crabCircle.move() }
+        repeat(10000) { crabCircle.move() }
         val took = timeInMillis() - start
         println("took=$took ms")
-        took shouldBeLessThan 1000 // Otherwise it takes too long
+        took shouldBeLessThan 2000 // Otherwise it takes too long
 
     }
     xcontext("create a crab circle with 100 cups") {
