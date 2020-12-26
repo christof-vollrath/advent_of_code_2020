@@ -148,12 +148,6 @@ class CrabCircle(
     }
 
     fun updateCupMap(modifiedRange: IntRange) {
-        /*
-        cups.forEachIndexed { index, cup ->
-            cupMap[cup] = index
-        }
-
-         */
         modifiedRange.forEach { i ->
             val cup = cups[i]
             cupMap[cup] = i
@@ -196,21 +190,21 @@ class CrabCircle(
     }
 
     fun removeAndInsert(toPick3: List<Int>, toPick3Pos: List<Int>, destinationCup: Int) {
-        val fullCupsSize = cups.size
+        val fullRange = 0 until cups.size
         val destinationPos = cupMap[destinationCup]!!
-        cups.removeAt(toPick3Pos)
-        val cupsRemovedBeforeDestinationPos = toPick3Pos.filter { it < destinationPos }.count()
-        val insertPos = nextPos(destinationPos-cupsRemovedBeforeDestinationPos) // should insert right to the pos
         val modifiedRange = if (toPick3Pos[0] > toPick3Pos[2]) { // Removing things at the end makes it to complicted
-            0 until fullCupsSize
+            fullRange
         } else {
-            if (destinationPos + 3 > fullCupsSize) { // Also inserting at the end makes to complicated
-                0 until fullCupsSize
+            if (destinationPos + 3 > cups.size) { // Also inserting at the end makes to complicated
+                fullRange
             } else
-                if (destinationPos < toPick3Pos.minOrNull()!!) destinationPos..toPick3Pos.maxOrNull()!!
-                else toPick3Pos.minOrNull()!!..(destinationPos+2)
+                if (destinationPos < toPick3Pos.minOrNull()!!) destinationPos .. toPick3Pos.maxOrNull()!!
+                else toPick3Pos.minOrNull()!! .. (destinationPos+2)
         }
         //println("Modified range $modifiedRange")
+        val cupsRemovedBeforeDestinationPos = toPick3Pos.filter { it < destinationPos }.count()
+        val insertPos = nextPos(destinationPos-cupsRemovedBeforeDestinationPos) // should insert right to the pos
+        cups.removeAt(toPick3Pos)
         for(element in toPick3.reversed()) cups.add(insertPos, element)
         updateCupMap(modifiedRange)
     }
