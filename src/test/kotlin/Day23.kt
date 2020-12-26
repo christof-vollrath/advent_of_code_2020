@@ -141,8 +141,9 @@ class CrabCircle(
         highestCup = initialCups.maxOrNull()!!,
         currentCup = initialCups[0]
     )
-    val cupMap = mutableMapOf<Int, Int>()
+    //val cupMap = mutableMapOf<Int, Int>()
 
+    /*
     init {
         updateCupMap(0 until cups.size)
     }
@@ -153,6 +154,8 @@ class CrabCircle(
             cupMap[cup] = i
         }
     }
+
+     */
 
     fun nextPos(pos: Int) = if (pos < cups.size-1) pos + 1 else 0
     fun toPrintableString(): String {
@@ -168,13 +171,17 @@ class CrabCircle(
 
     fun move() {
         round++
-        val currentPos = cupMap[currentCup]!!
-        //val currentPos = cups.indexOf(currentCup)
+        //val currentPos = cupMap[currentCup]!!
+        val currentPos = cups.indexOf(currentCup)
         val (toPick3Pos, toPick3) = toPick3(nextPos(currentPos))
         val destinationCup = findDestinationCup(currentCup, toPick3)
-        removeAndInsert(toPick3, toPick3Pos, destinationCup)
+        val removedBeforeCurrentPos = toPick3Pos.filter { it <= currentPos }.size
+        val destinationPos = cups.indexOf(destinationCup)
+        val insertedBeforeCurrentPos = if (destinationPos >= currentPos) 0 else 3
+        val calculatedCurrentPosAfterInsert = currentPos - removedBeforeCurrentPos + insertedBeforeCurrentPos
+        removeAndInsert(toPick3, toPick3Pos, destinationPos)
         //val currentPosAfterInsert = cups.indexOf(currentCup)
-        val currentPosAfterInsert = cupMap[currentCup]!!
+        val currentPosAfterInsert = calculatedCurrentPosAfterInsert
         val nextPos = nextPos(currentPosAfterInsert)
         currentCup = cups[nextPos]
         if (round % 100 == 0) println(round)
@@ -189,9 +196,9 @@ class CrabCircle(
         return nextTry
     }
 
-    fun removeAndInsert(toPick3: List<Int>, toPick3Pos: List<Int>, destinationCup: Int) {
+    fun removeAndInsert(toPick3: List<Int>, toPick3Pos: List<Int>, destinationPos: Int) {
         val fullRange = 0 until cups.size
-        val destinationPos = cupMap[destinationCup]!!
+        //val destinationPos = cupMap[destinationCup]!!
         val modifiedRange = if (toPick3Pos[0] > toPick3Pos[2]) { // Removing things at the end makes it to complicted
             fullRange
         } else {
@@ -206,7 +213,7 @@ class CrabCircle(
         val insertPos = nextPos(destinationPos-cupsRemovedBeforeDestinationPos) // should insert right to the pos
         cups.removeAt(toPick3Pos)
         for(element in toPick3.reversed()) cups.add(insertPos, element)
-        updateCupMap(modifiedRange)
+        //updateCupMap(modifiedRange)
     }
 
     fun toPick3(startPos: Int): Pair<List<Int>, List<Int>> {
