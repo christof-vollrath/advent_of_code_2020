@@ -133,13 +133,13 @@ class CrabCircle(
     val cups: GapList<Int>,
     val lowestCup: Int,
     val highestCup: Int,
-    var currentCup: Int
+    var currentPos: Int
 ) {
     constructor(initialCups: List<Int>): this(
         cups = GapList(initialCups),
         lowestCup = initialCups.minOrNull()!!,
         highestCup = initialCups.maxOrNull()!!,
-        currentCup = initialCups[0]
+        currentPos = 0
     )
     //val cupMap = mutableMapOf<Int, Int>()
 
@@ -171,8 +171,7 @@ class CrabCircle(
 
     fun move() {
         round++
-        //val currentPos = cupMap[currentCup]!!
-        val currentPos = cups.indexOf(currentCup)
+        val currentCup = cups[currentPos]
         val (toPick3Pos, toPick3) = toPick3(nextPos(currentPos))
         val destinationCup = findDestinationCup(currentCup, toPick3)
         val removedBeforeCurrentPos = toPick3Pos.filter { it <= currentPos }.size
@@ -183,7 +182,7 @@ class CrabCircle(
         //val currentPosAfterInsert = cups.indexOf(currentCup)
         val currentPosAfterInsert = calculatedCurrentPosAfterInsert
         val nextPos = nextPos(currentPosAfterInsert)
-        currentCup = cups[nextPos]
+        currentPos = nextPos
         if (round % 100 == 0) println(round)
     }
 
@@ -257,12 +256,12 @@ class Day23_Part1 : FunSpec({
             crabCircle.toPrintableString() shouldBe "125467389"
         }
         context("current cup should be 3 as the first cup") {
-            crabCircle.currentCup shouldBe 3
+            crabCircle.cups[crabCircle.currentPos] shouldBe 3
         }
         context("move 1") {
             crabCircle.move()
             test("current cup should be 2") {
-                crabCircle.currentCup shouldBe 2
+                crabCircle.cups[crabCircle.currentPos] shouldBe 2
             }
             test("cups 8, 9, 1 should have moved after 2") {
                 crabCircle.toPrintableString() shouldBe "154673289"
@@ -271,7 +270,7 @@ class Day23_Part1 : FunSpec({
         context("move 2") {
             crabCircle.move()
             test("current cup should be 5") {
-                crabCircle.currentCup shouldBe 5
+                crabCircle.cups[crabCircle.currentPos] shouldBe 5
             }
             test("cups 8, 9, 1 should have moved after 7") {
                 crabCircle.toPrintableString() shouldBe "132546789"
