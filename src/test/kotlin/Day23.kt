@@ -130,6 +130,7 @@ fun parseCrabCircleList(crabCircleString: String): List<Int> =
 
 
 class CrabCircle(
+    //val cups: GapList<Int>,
     val cups: GapList<Int>,
     val lowestCup: Int,
     val highestCup: Int,
@@ -183,7 +184,7 @@ class CrabCircle(
         val currentPosAfterInsert = calculatedCurrentPosAfterInsert
         val nextPos = nextPos(currentPosAfterInsert)
         currentPos = nextPos
-        if (round % 100 == 0) println(round)
+        if (round % 10_000 == 0) println(round)
     }
 
     fun findDestinationCup(cup: Int, picked3: List<Int>): Int {
@@ -322,51 +323,29 @@ class Day23_Part2: FunSpec({
         took shouldBeLessThan 2000 // Otherwise it takes too long
 
     }
-    xcontext("create a crab circle with 100 cups") {
-        val crabCircle = parseCrabCircleAndFill("326519478", 100)
-        /*
-        test("should have filed to 1000_000") {
-            crabCircle.cups.size shouldBe 1000_000
-            crabCircle.cups.maxOrNull() shouldBe 1000_000
-        }
-        */
-        context("play some rounds") {
-            var pos1BeforeMove: Int? = null
-            var following1BeforeMove: Pair<Int, Int>? = null
-            for (i in 1..100_000) {
-                pos1BeforeMove = crabCircle.cups.indexOf(1)
-                following1BeforeMove = crabCircle.cups[pos1BeforeMove!! + 1] to crabCircle.cups[pos1BeforeMove!! + 2]
-                crabCircle.move()
-                println(crabCircle.cups)
-                var pos1 = crabCircle.cups.indexOf(1)
-                /*
-                if (pos1 == pos1BeforeMove && crabCircle.cups[pos1 + 1] to crabCircle.cups[pos1 + 2] == following1BeforeMove) {
-                    println("no significant changes after move $i $pos1BeforeMove $following1BeforeMove")
-                    //break
-                }
-                */
-                if (crabCircle.cups[pos1 + 1] to crabCircle.cups[pos1 + 2] != following1BeforeMove) {
-                    println("significant changes after move $i $pos1BeforeMove $following1BeforeMove")
-                    //break
-                }
-            }
-        }
-    }
 
-    xcontext("create a crab circle with 1000,000 cups") {
+
+    xcontext("create a crab circle with 1000,000 cups") { // This will take about 13.5 hours using GapList as list implementation :-(
+        // TODO try to improve performance with a custom implementation for shifting numbers in an ArrayList
         val crabCircle = parseCrabCircleAndFill("326519478", 1000_000)
         test("should have filed to 1000_000") {
             crabCircle.cups.size shouldBe 1000_000
             crabCircle.cups.maxOrNull() shouldBe 1000_000
         }
         context("play some rounds") {
-            for (i in 1..10_000_000) {
-                var beforeMove = crabCircle.cups.toList()
-                crabCircle.move()
-                if (crabCircle.cups.toList() == beforeMove) {
-                    println("no changes after $i moves")
-                    break
-                }
+            val start = timeInMillis()
+            repeat(10_000_000) { crabCircle.move() }
+            val took = timeInMillis() - start
+            println("took=$took ms")
+            val cup1pos = crabCircle.cups.indexOf(1)
+            val next1 = crabCircle.cups[cup1pos + 1]
+            val nextNext1 = crabCircle.cups[cup1pos + 2]
+            println("next1=$next1")
+            println("nextNext1=$nextNext1")
+            val solution = next1.toLong() * nextNext1.toLong()
+            println("solution=$solution")
+            test("should have found solution") {
+                solution shouldBe 44541319250L
             }
         }
     }
